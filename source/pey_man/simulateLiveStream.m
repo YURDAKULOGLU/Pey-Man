@@ -38,7 +38,7 @@ tickCount = floor(options.durationSeconds / options.tickSeconds);
 fprintf("Synthetic live stream: %d ticks every %.1fs, writing to %s\n", ...
     tickCount, options.tickSeconds, liveDir);
 fprintf("Open the UI in another MATLAB session with autoRefresh:\n");
-fprintf("  runPeyManPixelApp(\"outputs/live\", struct(\"autoRefreshSeconds\", 2))\n\n");
+fprintf('  runPeyManPixelApp("outputs/live", struct("autoRefreshSeconds", 2))\n\n');
 
 steps = options.stepStart;
 calories = options.calorieStart;

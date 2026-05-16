@@ -104,6 +104,12 @@ Expected behavior:
 - the `LIVE TASKS` panel can track activity, minute, calorie, and step targets,
 - closing the UI or pressing Ctrl+C stops the live loop.
 
+If MATLAB Online cannot see the phone, `runPeyManLiveStream` now falls back to
+the synthetic live stream instead of crashing. That fallback still writes
+`outputs/live/latest_metrics.json` and opens the UI, so it is safe for rehearsal.
+For the real phone path, verify MATLAB Mobile uses the same MathWorks account and
+Sensors -> More -> Sensor Access / Stream to MATLAB is enabled.
+
 Do not use this as the only demo path. Keep the file-based path above working.
 
 ---

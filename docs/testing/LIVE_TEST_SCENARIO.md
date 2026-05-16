@@ -74,7 +74,19 @@ LIVE BUFFER | 24.0s collected, waiting for 24.0s.
 
 ### Tek MATLAB session'da
 
-İki ayrı MATLAB pencere (veya iki sekme) gerekli — biri simulator yazıyor, biri UI okuyor.
+En kısa demo-safe yol:
+
+```matlab
+cd /MATLAB Drive/Repositories/Pey-Man-2
+runPeyManLiveStream
+```
+
+Telefon MATLAB Online tarafından görülmezse bu komut otomatik olarak synthetic
+live fallback'e düşer, `outputs/live/` yazar ve UI'ı açar. Böylece jürinin
+önünde `mobiledev` bağlantısı yok diye app çökmez.
+
+Manuel simulator testi için iki ayrı MATLAB pencere (veya iki sekme) kullan:
+biri simulator yazıyor, biri UI okuyor.
 
 **Pencere 1 — Simulator**:
 ```matlab
@@ -116,7 +128,8 @@ UI penceresi açılır, her 2 sn'de bir auto-refresh. Pencere 1'in ürettiği ve
 
 | Belirti | Çözüm |
 |---|---|
-| `runPeyManLiveStream` "mobiledev not found" | Stats toolbox eksik. Demo'da kullanma, file-based path'e geç |
+| `runPeyManLiveStream` phone bulamıyor | Normal: launcher synthetic live fallback'e düşer. Gerçek stream için MATLAB Mobile > Sensors > More > Sensor Access ve Stream to MATLAB'ı aç |
+| Fallback de başlamıyor | `simulateLiveStream(struct("durationSeconds", 60, "tickSeconds", 3))` çalıştır, sonra `runPeyManPixelApp("outputs/live", struct("autoRefreshSeconds", 2))` |
 | Telefon stream LED yeşil ama konsol no samples | Aynı MathWorks hesabıyla giriş yap. Phone Wi-Fi |
 | LIVE TASKS panel görünmüyor | Eski UI cache'i. `close all; runPeyManPixelApp` ile yeniden aç |
 | UI auto-refresh etmiyor | `autoRefreshSeconds` 0 verilmiş. `struct("autoRefreshSeconds", 2)` parametresiyle aç |
