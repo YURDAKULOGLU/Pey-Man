@@ -11,6 +11,14 @@ if model.type == "fitctree"
     return;
 end
 
+if model.type == "centroid"
+    [label, confidence] = predictCentroidModel(X, model);
+    features.activityLabel = categorical(label);
+    features.modelConfidence = confidence;
+    features = applyLowMotionGuard(features);
+    return;
+end
+
 label = repmat("sit", height(features), 1);
 active = features.rmsDynAcc > 0.12 | features.activeRatio > 0.15 | features.dominantHz > 0.6;
 running = features.rmsDynAcc > 0.55 | features.dominantHz > 2.15 | features.peakCount >= 8;
@@ -21,6 +29,28 @@ features.activityLabel = categorical(label);
 margin = abs(features.rmsDynAcc - median(features.rmsDynAcc, "omitnan"));
 features.modelConfidence = clampValue(0.60 + 0.40 * normalize01(margin), 0.55, 0.95);
 features = applyLowMotionGuard(features);
+end
+
+function [label, confidence] = predictCentroidModel(X, model)
+Xraw = table2array(X);
+Xz = (Xraw - model.mu) ./ model.sigma;
+
+distances = zeros(size(Xz, 1), numel(model.centroidLabels));
+for i = 1:numel(model.centroidLabels)
+    delta = Xz - model.centroids(i, :);
+    distances(:, i) = sqrt(sum(delta .^ 2, 2, "omitnan"));
+end
+
+[bestDistance, idx] = min(distances, [], 2);
+sortedDistances = sort(distances, 2, "ascend");
+if size(sortedDistances, 2) > 1
+    margin = sortedDistances(:, 2) - sortedDistances(:, 1);
+else
+    margin = 1 ./ (1 + bestDistance);
+end
+
+label = model.centroidLabels(idx);
+confidence = clampValue(0.55 + 0.40 * normalize01(margin), 0.55, 0.95);
 end
 
 function features = applyLowMotionGuard(features)

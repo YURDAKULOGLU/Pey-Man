@@ -6,7 +6,7 @@ This project uses AgentLaboratory as inspiration for experiment discipline only.
 
 - ML component: supervised `sit / walk / run` classifier trained from `ActivityLogs.mat`.
 - Deterministic component: fatigue, quality, steps, calories, cadence, and confidence formulas.
-- Fallback: rule classifier when `fitctree` or training data is unavailable.
+- Fallback: toolbox-free nearest-centroid classifier when `fitctree` is unavailable; rule classifier only when training data is unavailable.
 
 ## Why Hybrid
 
@@ -57,6 +57,5 @@ Generated figures must pass these checks:
 | Readability | one-purpose `.m` files |
 | Visualization | raw sensor overview, fatigue timeline, dashboard, pixel UI |
 | Model making | sensor data -> windows -> labels -> scores |
-| Advanced ML | `fitctree` classifier + diagnostics |
+| Advanced ML | `fitctree` or toolbox-free nearest-centroid classifier + diagnostics |
 | Presentation | 5-minute English demo script and report outline |
-

@@ -13,14 +13,14 @@ Result: passed.
 Observed output:
 
 ```text
-WorkoutQualityScore: 58.8 / 100
+WorkoutQualityScore: 58.9 / 100
 FatigueIndex: 17.2 / 100
-ConfidenceIndex: 91.2%
+ConfidenceIndex: 91.4%
 StepCount: 624
 DistanceKm: 0.658
 DistanceSource: gps
 CadenceSpm: 104.8
-EstimatedCalories: 59.4
+EstimatedCalories: 26.0
 ActiveMinutes: 6.1
 PeakFatigueLabel: Peak Fatigue Signal at 5:56
 ```
@@ -98,15 +98,15 @@ Result: `SYNTHETIC_EXPORT_OK`.
 Observed synthetic output:
 
 ```text
-WorkoutQualityScore: 58.1 / 100
+WorkoutQualityScore: 52.3 / 100
 FatigueIndex: 49.3 / 100
-ConfidenceIndex: 94.2%
-StepCount: 821
+ConfidenceIndex: 92.5%
+StepCount: 597
 DistanceKm: 0.679
 DistanceSource: gps
-CadenceSpm: 75.0
-EstimatedCalories: 104.4
-ActiveMinutes: 11.0
+CadenceSpm: 90.0
+EstimatedCalories: 37.8
+ActiveMinutes: 7.2
 PeakFatigueLabel: Moderate Fatigue Signal at 7:07
 ```
 
@@ -140,6 +140,7 @@ Fix:
 - changed fatigue plot to fixed low/moderate/elevated threshold bands,
 - changed low-fatigue annotation from "elevated" to "peak",
 - added model diagnostics to exported JSON,
+- added toolbox-free nearest-centroid ML fallback so training still happens without `fitctree`,
 - added optional MATLAB `webwrite` coaching path with deterministic fallback.
 
 Commands:

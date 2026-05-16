@@ -32,8 +32,9 @@ The project still shows real ML through the activity classifier, but the hero sc
    - spectral power,
    - optional GPS speed.
 4. Train `fitctree` if Statistics and Machine Learning Toolbox is available.
-5. Fall back to a deterministic classifier only if `fitctree` is unavailable.
-6. Use classifier confidence as one component of the sensor confidence index.
+5. Fall back to a toolbox-free nearest-centroid classifier if `fitctree` is unavailable.
+6. Use deterministic rules only if labeled training data is unavailable.
+7. Use classifier confidence as one component of the sensor confidence index.
 
 ## Evaluation Discipline
 

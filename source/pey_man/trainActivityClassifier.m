@@ -57,7 +57,7 @@ if exist("fitctree", "file") == 2
     model.trainingLabelCounts = labelCounts(training.Label);
     model.reason = "trained from ActivityLogs.mat";
 else
-    model = ruleModel(predictorNames, "fitctree unavailable; using rule fallback");
+    model = centroidModel(X, y, predictorNames);
 end
 end
 
@@ -70,6 +70,45 @@ model.trainingRows = 0;
 model.trainingAccuracy = NaN;
 model.trainingLabelCounts = struct();
 model.reason = reason;
+end
+
+function model = centroidModel(X, y, predictorNames)
+Xraw = table2array(X);
+mu = mean(Xraw, 1, "omitnan");
+sigma = std(Xraw, 0, 1, "omitnan");
+sigma(~isfinite(sigma) | sigma < eps) = 1;
+Xz = (Xraw - mu) ./ sigma;
+
+labels = string(categories(y));
+centroids = zeros(numel(labels), width(X));
+for i = 1:numel(labels)
+    centroids(i, :) = mean(Xz(y == labels(i), :), 1, "omitnan");
+end
+
+predicted = predictCentroid(Xz, centroids, labels);
+
+model = struct();
+model.type = "centroid";
+model.predictorNames = predictorNames;
+model.trainedModel = [];
+model.centroidLabels = labels;
+model.centroids = centroids;
+model.mu = mu;
+model.sigma = sigma;
+model.trainingRows = numel(y);
+model.trainingAccuracy = mean(categorical(predicted) == y);
+model.trainingLabelCounts = labelCounts(y);
+model.reason = "trained from ActivityLogs.mat with toolbox-free nearest-centroid classifier";
+end
+
+function predicted = predictCentroid(Xz, centroids, labels)
+distances = zeros(size(Xz, 1), numel(labels));
+for i = 1:numel(labels)
+    delta = Xz - centroids(i, :);
+    distances(:, i) = sqrt(sum(delta .^ 2, 2, "omitnan"));
+end
+[~, idx] = min(distances, [], 2);
+predicted = labels(idx);
 end
 
 function counts = labelCounts(labels)
