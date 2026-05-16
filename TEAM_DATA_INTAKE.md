@@ -29,6 +29,8 @@ The CI hygiene gate rejects `.mat` files outside the starter data folder, so acc
 
 Each `.mat` should contain a timetable named `Acceleration` or another timetable with `X`, `Y`, `Z`. Optional GPS can be named `Position`.
 
+All submitted project data-processing paths must be MATLAB-only. Do not add Python importers, notebooks, or Python preprocessing steps to the demo path.
+
 If live data is delayed, run:
 
 ```matlab
@@ -41,3 +43,34 @@ For a real file, run:
 cd source/pey_man
 runPeyManFile("../../local_data/fatigue_demo.mat")
 ```
+
+## Public WISDM Fallback
+
+If team phone recordings are delayed, use the public WISDM HAR dataset as a local fallback for activity-recognition validation. Download and inspect it with MATLAB:
+
+```matlab
+cd source/pey_man
+downloadWisdmDataset
+inspectWisdmDataset
+```
+
+The files are written under ignored `local_data/wisdm_hf/`, not committed to git.
+
+WISDM source activities:
+
+- Walking
+- Jogging
+- Stairs
+- Sitting
+- Standing
+- Lying Down
+
+Project mapping idea:
+
+- `Sitting` -> `sit`
+- `Walking` -> `walk`
+- `Jogging` -> `run`
+- `Stairs` -> `walk` or future `stairs`
+- `Standing` / `Lying Down` -> `rest`
+
+Before using WISDM labels for final training evidence, confirm the numeric label order from the upstream source.
