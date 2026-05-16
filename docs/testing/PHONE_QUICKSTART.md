@@ -101,6 +101,7 @@ Expected behavior:
 - MATLAB creates a `mobiledev` connection,
 - live metrics are exported under `outputs/live/`,
 - the pixel UI auto-refreshes from that folder,
+- the `LIVE TASKS` panel can track activity, minute, calorie, and step targets,
 - closing the UI or pressing Ctrl+C stops the live loop.
 
 Do not use this as the only demo path. Keep the file-based path above working.
