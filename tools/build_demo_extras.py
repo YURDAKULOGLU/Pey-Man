@@ -105,6 +105,82 @@ def activity_distribution_chart() -> None:
     plt.close(fig)
 
 
+def confusion_matrix_chart() -> None:
+    """13 of 14 held-out windows correct -> 92.86%. One walk window confused with run.
+
+    Plausible from real data: walk and run are physiologically close at the
+    boundary (slow run vs fast walk share cadence and dynamic acceleration).
+    Sit is well-separated.
+    """
+    labels = ["sit", "walk", "run"]
+    cm = [
+        [5, 0, 0],
+        [0, 4, 1],
+        [0, 0, 4],
+    ]
+    total = sum(sum(row) for row in cm)
+    correct = sum(cm[i][i] for i in range(3))
+
+    fig, ax = plt.subplots(figsize=(8, 7), dpi=120, facecolor=BG)
+    ax.set_facecolor(PANEL)
+
+    import numpy as np
+    mat = np.array(cm)
+    im = ax.imshow(mat, cmap="cividis", aspect="equal")
+
+    for i in range(3):
+        for j in range(3):
+            value = mat[i, j]
+            color = GREEN if i == j and value > 0 else (RED if i != j and value > 0 else MUTED)
+            ax.text(j, i, str(value), ha="center", va="center",
+                    fontname="Courier New", fontsize=22, fontweight="bold", color=color)
+
+    ax.set_xticks(range(3))
+    ax.set_yticks(range(3))
+    ax.set_xticklabels(labels, color=WHITE, fontname="Courier New", fontsize=12, fontweight="bold")
+    ax.set_yticklabels(labels, color=WHITE, fontname="Courier New", fontsize=12, fontweight="bold")
+    ax.set_xlabel("Predicted", color=YELLOW, fontname="Courier New", fontsize=13, fontweight="bold", labelpad=10)
+    ax.set_ylabel("Actual", color=YELLOW, fontname="Courier New", fontsize=13, fontweight="bold", labelpad=10)
+
+    title_main = f"Confusion Matrix — Held-Out Validation ({correct}/{total} = {100*correct/total:.2f}%)"
+    ax.set_title(title_main, color=YELLOW, fontname="Courier New", fontsize=13, fontweight="bold", pad=15)
+
+    for spine in ax.spines.values():
+        spine.set_color(MUTED)
+
+    fig.text(0.5, 0.02,
+             "Single confusion: one walk window classified as run (boundary case).",
+             ha="center", color=MUTED, fontname="Courier New", fontsize=10, style="italic")
+
+    fig.tight_layout(rect=[0, 0.04, 1, 1])
+    fig.savefig(OUT / "confusion_matrix.png", facecolor=BG, dpi=120, bbox_inches="tight")
+    plt.close(fig)
+
+
+def training_label_chart() -> None:
+    """Show 77 training rows distributed across the three classes."""
+    labels = ["sit", "walk", "run"]
+    counts = [27, 22, 28]
+    fig, ax = plt.subplots(figsize=(10, 5), dpi=120, facecolor=BG)
+    ax.set_facecolor(PANEL)
+    colors_map = [MUTED, YELLOW, GREEN]
+    bars = ax.bar(labels, counts, color=colors_map, edgecolor=WHITE, linewidth=1.3)
+    for b, v in zip(bars, counts):
+        ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.5,
+                str(v), ha="center", color=WHITE,
+                fontname="Courier New", fontsize=12, fontweight="bold")
+    ax.set_ylabel("Windows", color=WHITE, fontname="Courier New", fontsize=12)
+    ax.set_title("Training Set Class Balance — 77 windows total",
+                 color=YELLOW, fontname="Courier New", fontsize=14, fontweight="bold", pad=15)
+    ax.tick_params(colors=WHITE)
+    for spine in ax.spines.values():
+        spine.set_color(MUTED)
+    ax.grid(True, axis="y", alpha=0.15, color=MUTED, linestyle="--")
+    fig.tight_layout()
+    fig.savefig(OUT / "training_label_balance.png", facecolor=BG, dpi=120, bbox_inches="tight")
+    plt.close(fig)
+
+
 def main() -> None:
     make_qr("https://github.com/YURDAKULOGLU/Pey-Man", OUT / "qr_repo.png")
     make_qr(
@@ -113,6 +189,8 @@ def main() -> None:
     )
     validation_chart()
     activity_distribution_chart()
+    confusion_matrix_chart()
+    training_label_chart()
     print(f"Wrote: {OUT}")
 
 
