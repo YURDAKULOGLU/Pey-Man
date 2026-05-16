@@ -63,6 +63,7 @@ candidates = [
     fullfile(outputsRoot, "example_file")
     fullfile(outputsRoot, "synthetic")
     fullfile(outputsRoot, "latest")
+    fullfile(outputsRoot, "sample_demo")
 ];
 
 sourceDir = "";
@@ -71,6 +72,23 @@ for i = 1:numel(candidates)
     if isfile(fullfile(candidate, "latest_metrics.json"))
         sourceDir = char(candidate);
         return;
+    end
+end
+
+if isfolder(outputsRoot)
+    entries = dir(outputsRoot);
+    entries = entries([entries.isdir] & ~startsWith({entries.name}, '.'));
+    if ~isempty(entries)
+        hasMetrics = false(size(entries));
+        for i = 1:numel(entries)
+            hasMetrics(i) = isfile(fullfile(outputsRoot, entries(i).name, "latest_metrics.json"));
+        end
+        entries = entries(hasMetrics);
+        if ~isempty(entries)
+            [~, idx] = max([entries.datenum]);
+            sourceDir = char(fullfile(outputsRoot, entries(idx).name));
+            return;
+        end
     end
 end
 end
