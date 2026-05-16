@@ -8,7 +8,15 @@ This project uses AgentLaboratory as inspiration for experiment discipline only.
 - Deterministic component: fatigue, quality, steps, calories, cadence, and confidence formulas.
 - Fallback ladder when Statistics & ML Toolbox is unavailable: `fitctree` → toolbox-free nearest-centroid classifier → rule-only classifier (last resort, training data missing).
 
-Validation accuracy is printed at runtime by `trainActivityClassifier.m` and persisted to `outputs/<session>/latest_metrics.json` under `modelValidationAccuracy` / `modelValidationRows`.
+Validation accuracy is printed at runtime by `trainActivityClassifier.m` and persisted to `outputs/<session>/latest_metrics.json` under both `validationAccuracy` / `validationRows` and `modelValidationAccuracy` / `modelValidationRows`.
+
+Current local validation evidence on the bundled starter logs:
+
+```text
+Validation accuracy: 92.9% (centroid fallback held-out 14 rows)
+```
+
+When Statistics & ML Toolbox is available, the same entrypoint uses the bagged-trees path and prints the held-out ensemble validation accuracy instead.
 
 ## Why Hybrid
 

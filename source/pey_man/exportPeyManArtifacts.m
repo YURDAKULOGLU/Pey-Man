@@ -36,13 +36,17 @@ metrics.modelTrainingRows = result.model.trainingRows;
 metrics.modelTrainingAccuracy = result.model.trainingAccuracy;
 if isfield(result.model, "validationAccuracy")
     metrics.modelValidationAccuracy = result.model.validationAccuracy;
+    metrics.validationAccuracy = result.model.validationAccuracy;
 else
     metrics.modelValidationAccuracy = NaN;
+    metrics.validationAccuracy = NaN;
 end
 if isfield(result.model, "validationRows")
     metrics.modelValidationRows = result.model.validationRows;
+    metrics.validationRows = result.model.validationRows;
 else
     metrics.modelValidationRows = 0;
+    metrics.validationRows = 0;
 end
 metrics.modelTrainingLabelCounts = result.model.trainingLabelCounts;
 

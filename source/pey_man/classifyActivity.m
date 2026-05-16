@@ -3,7 +3,7 @@ function features = classifyActivity(features, model)
 
 X = featurePredictorTable(features, model.predictorNames);
 
-if model.type == "fitctree"
+if model.type == "fitctree" || model.type == "fitcensemble-bag"
     [label, score] = predict(model.trainedModel, X);
     features.activityLabel = categorical(label);
     features.modelConfidence = max(score, [], 2);

@@ -78,6 +78,10 @@ elseif exist("fitctree", "file") == 2
     model.reason = "trained from ActivityLogs.mat";
 else
     model = centroidModel(X, y, predictorNames);
+    if ~isnan(model.validationAccuracy)
+        fprintf("Validation accuracy: %.1f%% (centroid fallback held-out %d rows)\n", ...
+            100 * model.validationAccuracy, model.validationRows);
+    end
 end
 end
 
@@ -118,18 +122,9 @@ model.reason = reason;
 end
 
 function model = centroidModel(X, y, predictorNames)
-Xraw = table2array(X);
-mu = mean(Xraw, 1, "omitnan");
-sigma = std(Xraw, 0, 1, "omitnan");
-sigma(~isfinite(sigma) | sigma < eps) = 1;
-Xz = (Xraw - mu) ./ sigma;
-
-labels = string(categories(y));
-centroids = zeros(numel(labels), width(X));
-for i = 1:numel(labels)
-    centroids(i, :) = mean(Xz(y == labels(i), :), 1, "omitnan");
-end
-
+[validationAccuracy, validationRows] = validateCentroidHoldout(X, y);
+[labels, centroids, mu, sigma] = buildCentroids(X, y);
+Xz = (table2array(X) - mu) ./ sigma;
 predicted = predictCentroid(Xz, centroids, labels);
 
 model = struct();
@@ -142,10 +137,55 @@ model.mu = mu;
 model.sigma = sigma;
 model.trainingRows = numel(y);
 model.trainingAccuracy = mean(categorical(predicted) == y);
-model.validationAccuracy = NaN;
-model.validationRows = 0;
+model.validationAccuracy = validationAccuracy;
+model.validationRows = validationRows;
 model.trainingLabelCounts = labelCounts(y);
 model.reason = "trained from ActivityLogs.mat with toolbox-free nearest-centroid classifier";
+end
+
+function [validationAccuracy, validationRows] = validateCentroidHoldout(X, y)
+validationAccuracy = NaN;
+validationRows = 0;
+
+testMask = false(numel(y), 1);
+cats = categories(y);
+for i = 1:numel(cats)
+    idx = find(y == cats{i});
+    if numel(idx) < 5
+        continue;
+    end
+    nTest = max(1, floor(0.2 * numel(idx)));
+    testMask(idx(end - nTest + 1:end)) = true;
+end
+
+if ~any(testMask)
+    return;
+end
+
+trainMask = ~testMask;
+if numel(categories(removecats(y(trainMask)))) < 2
+    return;
+end
+
+[labels, centroids, mu, sigma] = buildCentroids(X(trainMask, :), y(trainMask));
+Xval = (table2array(X(testMask, :)) - mu) ./ sigma;
+predicted = predictCentroid(Xval, centroids, labels);
+validationAccuracy = mean(categorical(predicted) == y(testMask));
+validationRows = sum(testMask);
+end
+
+function [labels, centroids, mu, sigma] = buildCentroids(X, y)
+Xraw = table2array(X);
+mu = mean(Xraw, 1, "omitnan");
+sigma = std(Xraw, 0, 1, "omitnan");
+sigma(~isfinite(sigma) | sigma < eps) = 1;
+Xz = (Xraw - mu) ./ sigma;
+
+labels = string(categories(y));
+centroids = zeros(numel(labels), width(X));
+for i = 1:numel(labels)
+    centroids(i, :) = mean(Xz(y == labels(i), :), 1, "omitnan");
+end
 end
 
 function predicted = predictCentroid(Xz, centroids, labels)
@@ -173,4 +213,3 @@ else
     value = defaultValue;
 end
 end
-

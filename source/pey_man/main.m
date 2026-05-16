@@ -19,6 +19,7 @@ options.dataFile = fullfile(projectRoot, "source", "matlab-mobile-fitness-tracke
 options.activityLogFile = fullfile(projectRoot, "source", "matlab-mobile-fitness-tracker-master", "ActivityLogs.mat");
 
 result = runPeyManPipeline(options);
+exportPeyManArtifacts(result, fullfile(projectRoot, "outputs", "example_file"));
 
 disp(" ");
 disp("=== Pey-Man Session Summary ===");

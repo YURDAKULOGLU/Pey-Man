@@ -258,12 +258,17 @@ drawAll();
         modelType = metricText("modelType", "unknown");
         modelRows = metricNumber("modelTrainingRows", 0);
         modelAcc = metricNumber("modelTrainingAccuracy", NaN);
+        validationAcc = metricNumber("validationAccuracy", metricNumber("modelValidationAccuracy", NaN));
+        validationRows = metricNumber("validationRows", metricNumber("modelValidationRows", 0));
         if strlength(coachText) == 0
             coachText = "Coach advice unavailable.";
         end
         coachText = truncateText(coachText, 95);
 
-        if isnan(modelAcc)
+        if ~isnan(validationAcc) && validationRows > 0
+            modelLine = sprintf("MODEL %s | VAL %.0f ROWS | ACC %.1f%%", ...
+                upper(char(modelType)), validationRows, validationAcc * 100);
+        elseif isnan(modelAcc)
             modelLine = sprintf("MODEL %s | TRAINING ROWS %.0f", upper(char(modelType)), modelRows);
         else
             modelLine = sprintf("MODEL %s | TRAIN %.0f ROWS | ACC %.1f%%", ...

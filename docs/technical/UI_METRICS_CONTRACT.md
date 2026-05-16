@@ -41,9 +41,13 @@ outputs/<session-name>/figure_*.png
   "peakFatigueLabel": "Peak Fatigue Signal at 5:56",
   "coachAdvice": "Strong session...",
   "coachAdviceSource": "template_fallback",
-  "modelType": "fitctree",
+  "modelType": "fitcensemble-bag",
   "modelTrainingRows": 147,
-  "modelTrainingAccuracy": 0.99
+  "modelTrainingAccuracy": 0.99,
+  "validationAccuracy": 0.94,
+  "validationRows": 29,
+  "modelValidationAccuracy": 0.94,
+  "modelValidationRows": 29
 }
 ```
 
