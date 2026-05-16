@@ -14,3 +14,12 @@ Recommended order:
 
 1. `001-onboard-and-baseline.md`
 2. `002-competitive-feature-and-demo.md`
+3. `003-roadmap-quality-and-ci.md`
+4. `004-v2-team-data-and-robust-metrics.md`
+
+Current roadmap:
+
+- V1: working model foundation.
+- V2: team data and robust metrics.
+- V3: product demo and UI integration.
+- V4: submission hardening.
