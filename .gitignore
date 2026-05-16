@@ -1,0 +1,26 @@
+# OS/editor noise
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+
+# Local runtime/output folders
+outputs/
+tmp/
+scratch/
+runtime/
+
+# MATLAB generated artifacts
+*.asv
+*.m~
+*.autosave
+slprj/
+codegen/
+*.slxc
+*.mex*
+
+# Keep hackathon source assets committed:
+# - .mat starter/example data
+# - .mlx live scripts
+# - PDFs from the official package
