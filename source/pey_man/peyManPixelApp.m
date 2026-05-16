@@ -1,42 +1,38 @@
-function peyManPixelApp
-% PEYMANPIXELAPP Pixel-art Pac-Man inspired fitness tracker UI.
-% Run with:
-%   peyManPixelApp
+function fig = peyManPixelApp(metricsSource)
+%PEYMANPIXELAPP Presentation-ready MATLAB-only Pac-Man fitness UI.
+%
+% The app is intentionally model-driven: it reads exported pipeline artifacts
+% from outputs/<session>/ and maps them into the arcade surface.
 
-targets.steps = 8000;
-targets.workoutMinutes = 30;
-targets.waterCups = 8;
-targets.sleepHours = 7;
+if nargin < 1
+    metricsSource = "";
+end
 
-state.score = 0;
-state.streak = 0;
-state.danger = 0;
-state.day = 1;
-state.progress = 0;
-state.lastStatus = "READY";
-state.metrics = [0 0 0 0];
+state.bundle = loadPeyManUiMetrics(metricsSource);
 
 colors.bg = [0.02 0.02 0.08];
 colors.panel = [0.03 0.04 0.13];
-colors.wall = [0.0 0.18 0.85];
-colors.wallGlow = [0.0 0.72 1.0];
-colors.yellow = [1.0 0.88 0.05];
-colors.pellet = [1.0 0.92 0.55];
-colors.ghost = [1.0 0.18 0.38];
-colors.ghost2 = [0.2 0.85 1.0];
+colors.panel2 = [0.00 0.01 0.05];
+colors.wall = [0.00 0.18 0.85];
+colors.wallGlow = [0.00 0.72 1.00];
+colors.yellow = [1.00 0.88 0.05];
+colors.pellet = [1.00 0.92 0.55];
+colors.ghost = [1.00 0.18 0.38];
+colors.ghost2 = [0.20 0.85 1.00];
 colors.white = [0.95 0.95 0.95];
-colors.green = [0.12 0.9 0.35];
-colors.orange = [1.0 0.56 0.05];
-colors.red = [1.0 0.12 0.18];
-colors.text = [1.0 0.95 0.72];
+colors.green = [0.12 0.90 0.35];
+colors.orange = [1.00 0.56 0.05];
+colors.red = [1.00 0.12 0.18];
+colors.text = [1.00 0.95 0.72];
+colors.muted = [0.58 0.62 0.78];
 
 fig = uifigure( ...
     "Name", "Pey-Man Fitness Tracker", ...
     "Color", colors.bg, ...
-    "Position", [100 100 1180 720]);
+    "Position", [80 80 1240 760]);
 
 root = uigridlayout(fig, [1 2]);
-root.ColumnWidth = {"1x", 330};
+root.ColumnWidth = {"1x", 400};
 root.RowHeight = {"1x"};
 root.Padding = [14 14 14 14];
 root.ColumnSpacing = 14;
@@ -45,15 +41,15 @@ root.BackgroundColor = colors.bg;
 left = uigridlayout(root, [3 1]);
 left.Layout.Row = 1;
 left.Layout.Column = 1;
-left.RowHeight = {58, "1x", 120};
+left.RowHeight = {64, "1x", 190};
 left.Padding = [0 0 0 0];
 left.RowSpacing = 12;
 left.BackgroundColor = colors.bg;
 
-header = uigridlayout(left, [1 3]);
+header = uigridlayout(left, [1 4]);
 header.Layout.Row = 1;
 header.Layout.Column = 1;
-header.ColumnWidth = {"1x", 170, 170};
+header.ColumnWidth = {"1x", 170, 170, 170};
 header.Padding = [0 0 0 0];
 header.ColumnSpacing = 10;
 header.BackgroundColor = colors.bg;
@@ -62,39 +58,41 @@ titleLabel = uilabel(header, ...
     "Text", "PEY-MAN", ...
     "FontName", "Courier New", ...
     "FontWeight", "bold", ...
-    "FontSize", 36, ...
-    "FontColor", colors.yellow);
+    "FontSize", 38, ...
+    "FontColor", colors.yellow, ...
+    "BackgroundColor", colors.bg);
 titleLabel.Layout.Row = 1;
 titleLabel.Layout.Column = 1;
 
-scoreLabel = makePixelLabel(header, "SCORE 000000", colors.text, 18);
-scoreLabel.Layout.Row = 1;
+scoreLabel = makeHeaderLabel(header, "SCORE 000000", colors.text);
 scoreLabel.Layout.Column = 2;
 
-streakLabel = makePixelLabel(header, "STREAK 0", colors.text, 18);
-streakLabel.Layout.Row = 1;
-streakLabel.Layout.Column = 3;
+levelLabel = makeHeaderLabel(header, "LEVEL 01", colors.text);
+levelLabel.Layout.Column = 3;
+
+trustLabel = makeHeaderLabel(header, "TRUST --%", colors.text);
+trustLabel.Layout.Column = 4;
 
 gameAxes = uiaxes(left);
 gameAxes.Layout.Row = 2;
 gameAxes.Layout.Column = 1;
 styleAxes(gameAxes, colors.bg);
 
-barAxes = uiaxes(left);
-barAxes.Layout.Row = 3;
-barAxes.Layout.Column = 1;
-styleAxes(barAxes, colors.bg);
+timelineAxes = uiaxes(left);
+timelineAxes.Layout.Row = 3;
+timelineAxes.Layout.Column = 1;
+styleAxes(timelineAxes, colors.bg);
 
 side = uigridlayout(root, [5 1]);
 side.Layout.Row = 1;
 side.Layout.Column = 2;
-side.RowHeight = {56, 230, 168, "1x", 56};
+side.RowHeight = {56, 255, 155, "1x", 58};
 side.Padding = [0 0 0 0];
 side.RowSpacing = 12;
 side.BackgroundColor = colors.bg;
 
 statusLabel = uilabel(side, ...
-    "Text", "READY", ...
+    "Text", "LOADING", ...
     "HorizontalAlignment", "center", ...
     "FontName", "Courier New", ...
     "FontWeight", "bold", ...
@@ -104,69 +102,50 @@ statusLabel = uilabel(side, ...
 statusLabel.Layout.Row = 1;
 statusLabel.Layout.Column = 1;
 
-inputPanel = uipanel(side, ...
-    "Title", "DAILY INPUT", ...
-    "FontName", "Courier New", ...
-    "FontWeight", "bold", ...
-    "FontSize", 13, ...
-    "ForegroundColor", colors.text, ...
-    "BackgroundColor", colors.panel);
-inputPanel.Layout.Row = 2;
-inputPanel.Layout.Column = 1;
+metricsPanel = makePanel(side, "SESSION METRICS");
+metricsPanel.Layout.Row = 2;
+metricGrid = uigridlayout(metricsPanel, [8 2]);
+metricGrid.ColumnWidth = {150, "1x"};
+metricGrid.RowHeight = repmat({22}, 1, 8);
+metricGrid.Padding = [12 18 12 12];
+metricGrid.RowSpacing = 3;
+metricGrid.ColumnSpacing = 8;
+metricGrid.BackgroundColor = colors.panel;
 
-inputGrid = uigridlayout(inputPanel, [4 2]);
-inputGrid.ColumnWidth = {"1x", 112};
-inputGrid.RowHeight = {40, 40, 40, 40};
-inputGrid.Padding = [12 18 12 12];
-inputGrid.RowSpacing = 8;
-inputGrid.ColumnSpacing = 10;
-inputGrid.BackgroundColor = colors.panel;
+metricLabels.quality = addMetricRow(metricGrid, "QUALITY", 1);
+metricLabels.fatigue = addMetricRow(metricGrid, "FATIGUE", 2);
+metricLabels.confidence = addMetricRow(metricGrid, "CONFIDENCE", 3);
+metricLabels.sport = addMetricRow(metricGrid, "SPORT", 4);
+metricLabels.steps = addMetricRow(metricGrid, "STEPS", 5);
+metricLabels.distance = addMetricRow(metricGrid, "DISTANCE", 6);
+metricLabels.cadence = addMetricRow(metricGrid, "CADENCE", 7);
+metricLabels.calories = addMetricRow(metricGrid, "CALORIES", 8);
 
-stepsField = addInput(inputGrid, "STEPS", 0, 1);
-workoutField = addInput(inputGrid, "WORKOUT MIN", 0, 2);
-waterField = addInput(inputGrid, "WATER CUP", 0, 3);
-sleepField = addInput(inputGrid, "SLEEP HOUR", 0, 4);
+activityPanel = makePanel(side, "ACTIVITY + CALORIES");
+activityPanel.Layout.Row = 3;
+activityGrid = uigridlayout(activityPanel, [1 1]);
+activityGrid.Padding = [8 18 8 8];
+activityGrid.BackgroundColor = colors.panel;
+activityAxes = uiaxes(activityGrid);
+activityAxes.Layout.Row = 1;
+activityAxes.Layout.Column = 1;
+styleAxes(activityAxes, colors.panel);
 
-targetPanel = uipanel(side, ...
-    "Title", "TARGETS", ...
-    "FontName", "Courier New", ...
-    "FontWeight", "bold", ...
-    "FontSize", 13, ...
-    "ForegroundColor", colors.text, ...
-    "BackgroundColor", colors.panel);
-targetPanel.Layout.Row = 3;
-targetPanel.Layout.Column = 1;
-
-targetGrid = uigridlayout(targetPanel, [4 1]);
-targetGrid.RowHeight = {"1x", "1x", "1x", "1x"};
-targetGrid.Padding = [12 18 12 12];
-targetGrid.RowSpacing = 2;
-targetGrid.BackgroundColor = colors.panel;
-
-makeTargetText(targetGrid, sprintf("STEPS        %5d", targets.steps), 1);
-makeTargetText(targetGrid, sprintf("WORKOUT      %5d MIN", targets.workoutMinutes), 2);
-makeTargetText(targetGrid, sprintf("WATER        %5d CUP", targets.waterCups), 3);
-makeTargetText(targetGrid, sprintf("SLEEP        %5d HOUR", targets.sleepHours), 4);
-
-logPanel = uipanel(side, ...
-    "Title", "MISSION LOG", ...
-    "FontName", "Courier New", ...
-    "FontWeight", "bold", ...
-    "FontSize", 13, ...
-    "ForegroundColor", colors.text, ...
-    "BackgroundColor", colors.panel);
+logPanel = makePanel(side, "DEMO NARRATIVE");
 logPanel.Layout.Row = 4;
-logPanel.Layout.Column = 1;
-
-logLabel = uilabel(logPanel, ...
-    "Text", "Enter today metrics and press SAVE DAY.", ...
+logGrid = uigridlayout(logPanel, [1 1]);
+logGrid.Padding = [12 18 12 12];
+logGrid.BackgroundColor = colors.panel;
+logLabel = uilabel(logGrid, ...
+    "Text", "", ...
     "FontName", "Courier New", ...
     "FontSize", 13, ...
     "FontColor", colors.white, ...
     "BackgroundColor", colors.panel, ...
     "VerticalAlignment", "top", ...
     "WordWrap", "on");
-logLabel.Position = [12 12 288 134];
+logLabel.Layout.Row = 1;
+logLabel.Layout.Column = 1;
 
 buttonGrid = uigridlayout(side, [1 3]);
 buttonGrid.Layout.Row = 5;
@@ -176,224 +155,305 @@ buttonGrid.Padding = [0 0 0 0];
 buttonGrid.ColumnSpacing = 8;
 buttonGrid.BackgroundColor = colors.bg;
 
-saveButton = makePixelButton(buttonGrid, "SAVE DAY", colors.yellow, [0 0 0]);
-saveButton.Layout.Row = 1;
-saveButton.Layout.Column = 1;
-saveButton.ButtonPushedFcn = @saveDay;
+refreshButton = makePixelButton(buttonGrid, "REFRESH", colors.yellow, [0 0 0]);
+refreshButton.Layout.Column = 1;
+refreshButton.ButtonPushedFcn = @refreshCurrent;
 
-demoButton = makePixelButton(buttonGrid, "DEMO +", colors.ghost2, [0 0 0]);
-demoButton.Layout.Row = 1;
-demoButton.Layout.Column = 2;
-demoButton.ButtonPushedFcn = @demoGoodDay;
+exampleButton = makePixelButton(buttonGrid, "EXAMPLE", colors.ghost2, [0 0 0]);
+exampleButton.Layout.Column = 2;
+exampleButton.ButtonPushedFcn = @loadExample;
 
-resetButton = makePixelButton(buttonGrid, "RESET", colors.red, colors.white);
-resetButton.Layout.Row = 1;
-resetButton.Layout.Column = 3;
-resetButton.ButtonPushedFcn = @resetGame;
+syntheticButton = makePixelButton(buttonGrid, "SYNTH", colors.red, colors.white);
+syntheticButton.Layout.Column = 3;
+syntheticButton.ButtonPushedFcn = @loadSynthetic;
 
 drawAll();
 
-    function field = addInput(parent, labelText, value, row)
-        label = uilabel(parent, ...
-            "Text", labelText, ...
+    function label = addMetricRow(parent, name, row)
+        nameLabel = uilabel(parent, ...
+            "Text", name, ...
             "FontName", "Courier New", ...
             "FontWeight", "bold", ...
             "FontSize", 13, ...
             "FontColor", colors.text, ...
             "BackgroundColor", colors.panel);
-        label.Layout.Row = row;
-        label.Layout.Column = 1;
+        nameLabel.Layout.Row = row;
+        nameLabel.Layout.Column = 1;
 
-        field = uieditfield(parent, "numeric", ...
-            "Value", value, ...
-            "Limits", [0 Inf], ...
-            "RoundFractionalValues", "off", ...
-            "FontName", "Courier New", ...
-            "FontWeight", "bold", ...
-            "FontSize", 13, ...
-            "FontColor", colors.white, ...
-            "BackgroundColor", [0 0 0]);
-        field.Layout.Row = row;
-        field.Layout.Column = 2;
-    end
-
-    function makeTargetText(parent, textValue, row)
         label = uilabel(parent, ...
-            "Text", textValue, ...
+            "Text", "--", ...
+            "HorizontalAlignment", "right", ...
             "FontName", "Courier New", ...
             "FontWeight", "bold", ...
             "FontSize", 13, ...
             "FontColor", colors.white, ...
             "BackgroundColor", colors.panel);
         label.Layout.Row = row;
-        label.Layout.Column = 1;
+        label.Layout.Column = 2;
     end
 
-    function saveDay(varargin)
-        metrics = [
-            stepsField.Value
-            workoutField.Value
-            waterField.Value
-            sleepField.Value
-        ];
-
-        state.metrics = metrics(:)';
-        ratios = [
-            metrics(1) / targets.steps
-            metrics(2) / targets.workoutMinutes
-            metrics(3) / targets.waterCups
-            metrics(4) / targets.sleepHours
-        ];
-        ratios = min(max(ratios, 0), 1);
-
-        weights = [0.45 0.25 0.15 0.15]';
-        state.progress = round(100 * sum(ratios .* weights));
-        state.score = state.score + state.progress * 10;
-
-        if state.progress >= 100
-            state.streak = state.streak + 1;
-            state.danger = max(state.danger - 1, 0);
-            state.lastStatus = "CLEAR!";
-        elseif state.progress >= 70
-            state.danger = max(state.danger, 1);
-            state.lastStatus = "CLOSE";
-        else
-            state.streak = 0;
-            state.danger = min(state.danger + 1, 5);
-            state.lastStatus = "CHASE";
-        end
-
-        state.day = state.day + 1;
+    function refreshCurrent(varargin)
+        state.bundle = loadPeyManUiMetrics(state.bundle.outputDir);
         drawAll();
     end
 
-    function demoGoodDay(varargin)
-        stepsField.Value = targets.steps + randi([250 1800]);
-        workoutField.Value = targets.workoutMinutes + randi([5 25]);
-        waterField.Value = targets.waterCups;
-        sleepField.Value = targets.sleepHours + 0.5;
-        saveDay();
+    function loadExample(varargin)
+        state.bundle = loadPeyManUiMetrics(defaultOutputDir("example_file"));
+        drawAll();
     end
 
-    function resetGame(varargin)
-        state.score = 0;
-        state.streak = 0;
-        state.danger = 0;
-        state.day = 1;
-        state.progress = 0;
-        state.lastStatus = "READY";
-        state.metrics = [0 0 0 0];
-
-        stepsField.Value = 0;
-        workoutField.Value = 0;
-        waterField.Value = 0;
-        sleepField.Value = 0;
+    function loadSynthetic(varargin)
+        state.bundle = loadPeyManUiMetrics(defaultOutputDir("synthetic"));
         drawAll();
     end
 
     function drawAll()
-        scoreLabel.Text = sprintf("SCORE %06d", state.score);
-        streakLabel.Text = sprintf("STREAK %d", state.streak);
-        statusLabel.Text = char(state.lastStatus);
+        quality = metricNumber("workoutQualityScore", 0);
+        fatigue = metricNumber("fatigueIndex", 0);
+        confidence = metricNumber("confidenceIndex", 0);
+        score = round(quality * 1000 + confidence * 100);
 
-        if state.danger >= 4
+        scoreLabel.Text = sprintf("SCORE %06d", score);
+        levelLabel.Text = sprintf("LEVEL %02d", max(1, ceil(max(quality, 1) / 20)));
+        trustLabel.Text = sprintf("TRUST %.0f%%", confidence);
+
+        if ~state.bundle.hasMetrics
+            statusLabel.Text = "NO DATA";
             statusLabel.FontColor = colors.red;
-        elseif state.progress >= 100
+        elseif fatigue >= 70
+            statusLabel.Text = "FATIGUE!";
+            statusLabel.FontColor = colors.red;
+        elseif quality >= 75
+            statusLabel.Text = "POWER RUN";
             statusLabel.FontColor = colors.green;
-        elseif state.progress >= 70
-            statusLabel.FontColor = colors.orange;
         else
+            statusLabel.Text = "MODEL READY";
             statusLabel.FontColor = colors.yellow;
         end
 
-        logLabel.Text = composeLogText();
+        metricLabels.quality.Text = sprintf("%.1f / 100", quality);
+        metricLabels.fatigue.Text = sprintf("%.1f / 100", fatigue);
+        metricLabels.confidence.Text = sprintf("%.1f %%", confidence);
+        metricLabels.sport.Text = char(metricText("detectedSport", "N/A"));
+        metricLabels.steps.Text = sprintf("%d", round(metricNumber("stepCount", 0)));
+        metricLabels.distance.Text = sprintf("%.2f km", metricNumber("distanceKm", 0));
+        metricLabels.cadence.Text = sprintf("%.1f spm", metricNumber("cadenceSpm", 0));
+        metricLabels.calories.Text = sprintf("%.1f kcal", metricNumber("estimatedCalories", 0));
+
+        logLabel.Text = composeNarrative();
         drawGame();
-        drawBars();
+        drawTimeline();
+        drawActivity();
     end
 
-    function textValue = composeLogText()
-        if state.progress >= 100
-            message = "Pey-Man cleared the maze. Streak is alive.";
-        elseif state.progress >= 70
-            message = "Pey-Man is close. Finish one more small target.";
-        elseif state.danger > 0
-            message = "Ghost is chasing. Missed goals move it closer.";
+    function textValue = composeNarrative()
+        if ~state.bundle.hasMetrics
+            textValue = sprintf("%s\n\nRun main, runSyntheticFatigueDemo, or load a session output folder.", ...
+                char(state.bundle.statusMessage));
+            return;
+        end
+
+        coachText = metricText("coachAdvice", "");
+        sourceText = metricText("coachAdviceSource", "template");
+        modelType = metricText("modelType", "unknown");
+        modelRows = metricNumber("modelTrainingRows", 0);
+        modelAcc = metricNumber("modelTrainingAccuracy", NaN);
+        if strlength(coachText) == 0
+            coachText = "Coach advice unavailable.";
+        end
+        coachText = truncateText(coachText, 95);
+
+        if isnan(modelAcc)
+            modelLine = sprintf("MODEL %s | TRAINING ROWS %.0f", upper(char(modelType)), modelRows);
         else
-            message = "Enter today metrics and press SAVE DAY.";
+            modelLine = sprintf("MODEL %s | TRAIN %.0f ROWS | ACC %.1f%%", ...
+                upper(char(modelType)), modelRows, modelAcc * 100);
         end
 
         textValue = sprintf([ ...
-            "DAY %02d\n" ...
-            "PROGRESS %3d%%\n" ...
-            "DANGER   %3d/5\n\n" ...
-            "%s"], state.day, state.progress, state.danger, char(message));
+            '%s\n' ...
+            'QUALITY %.1f | FATIGUE %.1f | TRUST %.1f%%\n' ...
+            '%s: %.0f steps, %.2f km, %.1f kcal.\n' ...
+            'FLOW: sensors -> ML -> fatigue -> game progress.\n' ...
+            'COACH (%s): %s'], ...
+            modelLine, ...
+            metricNumber("workoutQualityScore", 0), ...
+            metricNumber("fatigueIndex", 0), ...
+            metricNumber("confidenceIndex", 0), ...
+            char(metricText("detectedSport", "Session")), ...
+            metricNumber("stepCount", 0), ...
+            metricNumber("distanceKm", 0), ...
+            metricNumber("estimatedCalories", 0), ...
+            char(sourceText), char(coachText));
     end
 
     function drawGame()
+        quality = metricNumber("workoutQualityScore", 0);
+        fatigue = metricNumber("fatigueIndex", 0);
+        confidence = metricNumber("confidenceIndex", 0);
+        calories = metricNumber("estimatedCalories", 0);
+        sport = metricText("detectedSport", "SESSION");
+        progress = min(max(quality, 0), 100);
+        danger = min(max(fatigue, 0), 100);
+
         cla(gameAxes);
         hold(gameAxes, "on");
         gameAxes.Color = colors.bg;
-        xlim(gameAxes, [0 34]);
-        ylim(gameAxes, [0 22]);
+        xlim(gameAxes, [0 36]);
+        ylim(gameAxes, [0 23]);
 
         drawMazeFrame();
-        drawPelletLane();
+        drawPellets(progress);
 
         laneStart = 4;
-        laneEnd = 25;
-        pacX = laneStart + round((laneEnd - laneStart) * min(state.progress, 100) / 100);
-        pacY = 10;
+        laneEnd = 27;
+        pacX = laneStart + (laneEnd - laneStart) * progress / 100;
+        pacY = 10.3;
+        ghostX = 31 - 14 * danger / 100;
+        ghostX = max(pacX + 3.2, ghostX);
+        ghostX = min(ghostX, 31);
 
-        ghostBaseX = 29;
-        ghostX = max(pacX + 3, ghostBaseX - state.danger * 3);
-        ghostX = min(ghostX, 29);
-        ghostY = 10;
-
-        if state.danger >= 4 && state.progress < 70
-            drawPixelGhost(gameAxes, ghostX, ghostY, colors.red, 0.34);
-            drawPixelGhost(gameAxes, ghostX + 2.8, ghostY + 5.8, colors.ghost, 0.22);
+        if danger >= 70
+            drawPixelGhost(gameAxes, ghostX, pacY, colors.red, 0.36);
+            text(gameAxes, 13.2, 18.6, "FATIGUE CHASE", ...
+                "FontName", "Courier New", "FontWeight", "bold", ...
+                "FontSize", 18, "Color", colors.red);
         else
-            drawPixelGhost(gameAxes, ghostX, ghostY, colors.ghost, 0.34);
+            drawPixelGhost(gameAxes, ghostX, pacY, colors.ghost, 0.36);
+            text(gameAxes, 11.6, 18.6, "DAILY MAZE MODE", ...
+                "FontName", "Courier New", "FontWeight", "bold", ...
+                "FontSize", 18, "Color", colors.pellet);
         end
 
-        drawPixelPacman(gameAxes, pacX, pacY, colors.yellow, 0.34);
+        drawPixelPacman(gameAxes, pacX, pacY, colors.yellow, 0.38);
+        drawFruit(calories);
 
-        if state.progress >= 100
-            drawPixelText(gameAxes, "LEVEL CLEAR", 10.0, 17.2, colors.green, 0.24);
-        elseif state.danger >= 4
-            drawPixelText(gameAxes, "RUN", 14.4, 17.2, colors.red, 0.28);
-        else
-            drawPixelText(gameAxes, "EAT THE GOALS", 8.4, 17.2, colors.pellet, 0.22);
-        end
+        text(gameAxes, 3.1, 2.1, sprintf("QUALITY %.0f%%", progress), ...
+            "FontName", "Courier New", "FontWeight", "bold", ...
+            "FontSize", 14, "Color", scoreColor(progress, false));
+        text(gameAxes, 17.0, 2.1, sprintf("SENSOR TRUST %.0f%%", confidence), ...
+            "FontName", "Courier New", "FontWeight", "bold", ...
+            "FontSize", 14, "Color", scoreColor(confidence, false));
+        text(gameAxes, 3.1, 20.9, upper(char(sport)), ...
+            "FontName", "Courier New", "FontWeight", "bold", ...
+            "FontSize", 13, "Color", colors.muted);
 
         hold(gameAxes, "off");
     end
 
+    function drawTimeline()
+        cla(timelineAxes);
+        hold(timelineAxes, "on");
+        timelineAxes.Color = colors.panel2;
+        timelineAxes.XColor = colors.text;
+        timelineAxes.YColor = colors.text;
+        timelineAxes.FontName = "Courier New";
+        timelineAxes.FontWeight = "bold";
+        timelineAxes.Box = "on";
+        timelineAxes.LineWidth = 1;
+        title(timelineAxes, "FATIGUE INDEX TIMELINE", "Color", colors.text, "FontName", "Courier New");
+        xlabel(timelineAxes, "Minute", "Color", colors.text);
+        ylabel(timelineAxes, "FI", "Color", colors.text);
+        ylim(timelineAxes, [0 100]);
+
+        tbl = state.bundle.fatigueTimeline;
+        if state.bundle.hasMetrics && height(tbl) > 0 && all(ismember(["minute", "FatigueIndex"], string(tbl.Properties.VariableNames)))
+            x = tbl.minute;
+            y = tbl.FatigueIndex;
+            xMin = min(x);
+            xMax = max(x);
+            if xMax <= xMin
+                xMax = xMin + 1;
+            end
+            rectangle(timelineAxes, "Position", [xMin 0 xMax - xMin 30], ...
+                "FaceColor", [0.03 0.18 0.08], "EdgeColor", "none");
+            rectangle(timelineAxes, "Position", [xMin 30 xMax - xMin 40], ...
+                "FaceColor", [0.24 0.16 0.03], "EdgeColor", "none");
+            rectangle(timelineAxes, "Position", [xMin 70 xMax - xMin 30], ...
+                "FaceColor", [0.22 0.02 0.04], "EdgeColor", "none");
+            plot(timelineAxes, x, y, "Color", colors.yellow, "LineWidth", 2.5);
+            [peakValue, idx] = max(y);
+            plot(timelineAxes, x(idx), peakValue, "o", ...
+                "MarkerFaceColor", colors.red, "MarkerEdgeColor", colors.white, "MarkerSize", 7);
+            text(timelineAxes, x(idx), min(95, peakValue + 8), sprintf("PEAK %.0f", peakValue), ...
+                "FontName", "Courier New", "FontWeight", "bold", ...
+                "FontSize", 11, "Color", colors.white);
+            xlim(timelineAxes, [xMin xMax]);
+            grid(timelineAxes, "on");
+        else
+            text(timelineAxes, 0.5, 50, "RUN PIPELINE TO LOAD TIMELINE", ...
+                "HorizontalAlignment", "center", ...
+                "FontName", "Courier New", "FontWeight", "bold", ...
+                "FontSize", 14, "Color", colors.red);
+            xlim(timelineAxes, [0 1]);
+        end
+        hold(timelineAxes, "off");
+    end
+
+    function drawActivity()
+        cla(activityAxes);
+        hold(activityAxes, "on");
+        activityAxes.Color = colors.panel;
+        activityAxes.XColor = colors.text;
+        activityAxes.YColor = colors.text;
+        activityAxes.FontName = "Courier New";
+        activityAxes.FontWeight = "bold";
+
+        tbl = state.bundle.caloriesByActivity;
+        if state.bundle.hasMetrics && height(tbl) > 0 && all(ismember(["activity", "minutes"], string(tbl.Properties.VariableNames)))
+            labels = string(tbl.activity);
+            minutes = tbl.minutes;
+            if ismember("calories", string(tbl.Properties.VariableNames))
+                values = tbl.calories;
+                title(activityAxes, "KCAL BY ACTIVITY", "Color", colors.text, "FontName", "Courier New");
+                xText = "kcal";
+            else
+                values = minutes;
+                title(activityAxes, "MINUTES BY ACTIVITY", "Color", colors.text, "FontName", "Courier New");
+                xText = "min";
+            end
+            keep = minutes > 0 | values > 0;
+            labels = labels(keep);
+            values = values(keep);
+            if isempty(values)
+                labels = "none";
+                values = 0;
+            end
+            barh(activityAxes, categorical(labels), values, "FaceColor", colors.yellow, "EdgeColor", colors.wallGlow);
+            xlabel(activityAxes, xText, "Color", colors.text);
+            grid(activityAxes, "on");
+        else
+            text(activityAxes, 0.5, 0.5, "NO ACTIVITY CSV", ...
+                "HorizontalAlignment", "center", ...
+                "FontName", "Courier New", "FontWeight", "bold", ...
+                "FontSize", 13, "Color", colors.red);
+            xlim(activityAxes, [0 1]);
+            ylim(activityAxes, [0 1]);
+        end
+        hold(activityAxes, "off");
+    end
+
     function drawMazeFrame()
-        drawWall(1, 1, 32, 1);
-        drawWall(1, 20, 32, 1);
-        drawWall(1, 1, 1, 20);
-        drawWall(32, 1, 1, 20);
-
-        drawWall(3, 3, 6, 1);
-        drawWall(12, 3, 8, 1);
-        drawWall(24, 3, 6, 1);
-        drawWall(3, 17, 6, 1);
-        drawWall(12, 17, 8, 1);
-        drawWall(24, 17, 6, 1);
-
-        drawWall(6, 5, 1, 4);
-        drawWall(27, 5, 1, 4);
-        drawWall(6, 12, 1, 4);
-        drawWall(27, 12, 1, 4);
-
-        drawWall(12, 6, 2, 3);
-        drawWall(20, 6, 2, 3);
-        drawWall(12, 13, 2, 3);
-        drawWall(20, 13, 2, 3);
-
-        drawWall(15, 8, 4, 1);
-        drawWall(15, 12, 4, 1);
+        drawWall(1, 1, 34, 1);
+        drawWall(1, 21, 34, 1);
+        drawWall(1, 1, 1, 21);
+        drawWall(34, 1, 1, 21);
+        drawWall(4, 4, 7, 1);
+        drawWall(14, 4, 8, 1);
+        drawWall(25, 4, 6, 1);
+        drawWall(4, 17, 7, 1);
+        drawWall(14, 17, 8, 1);
+        drawWall(25, 17, 6, 1);
+        drawWall(7, 6, 1, 5);
+        drawWall(28, 6, 1, 5);
+        drawWall(7, 12, 1, 4);
+        drawWall(28, 12, 1, 4);
+        drawWall(13, 7, 2, 3);
+        drawWall(21, 7, 2, 3);
+        drawWall(13, 13, 2, 3);
+        drawWall(21, 13, 2, 3);
+        drawWall(16, 9, 4, 1);
+        drawWall(16, 13, 4, 1);
     end
 
     function drawWall(x, y, w, h)
@@ -404,70 +464,89 @@ drawAll();
             "LineWidth", 1.2);
     end
 
-    function drawPelletLane()
-        for x = 5:2:27
-            if x < 5 + round(22 * min(state.progress, 100) / 100)
+    function drawPellets(progress)
+        pelletXs = 5:1.6:29;
+        collectedCount = floor(numel(pelletXs) * progress / 100);
+        for i = 1:numel(pelletXs)
+            if i <= collectedCount
                 pelletColor = [0.08 0.08 0.12];
             else
                 pelletColor = colors.pellet;
             end
-
             rectangle(gameAxes, ...
-                "Position", [x 10.9 0.32 0.32], ...
+                "Position", [pelletXs(i) 11.25 0.30 0.30], ...
                 "FaceColor", pelletColor, ...
                 "EdgeColor", pelletColor);
         end
-
-        rectangle(gameAxes, ...
-            "Position", [29.2 10.6 0.9 0.9], ...
-            "FaceColor", colors.white, ...
-            "EdgeColor", colors.pellet, ...
-            "LineWidth", 1.4);
     end
 
-    function drawBars()
-        cla(barAxes);
-        hold(barAxes, "on");
-        xlim(barAxes, [0 100]);
-        ylim(barAxes, [0 5]);
-
-        names = ["STEPS", "WORK", "WATER", "SLEEP"];
-        values = [
-            state.metrics(1) / targets.steps
-            state.metrics(2) / targets.workoutMinutes
-            state.metrics(3) / targets.waterCups
-            state.metrics(4) / targets.sleepHours
-        ];
-        values = min(max(values, 0), 1);
-
-        for i = 1:4
-            y = 5 - i;
-            drawPixelText(barAxes, char(names(i)), 2, y + 0.2, colors.text, 0.12);
-            rectangle(barAxes, ...
-                "Position", [24 y + 0.17 70 0.54], ...
-                "FaceColor", [0 0 0], ...
-                "EdgeColor", colors.wallGlow, ...
-                "LineWidth", 1.0);
-
-            barColor = colors.red;
-            if values(i) >= 1
-                barColor = colors.green;
-            elseif values(i) >= 0.7
-                barColor = colors.orange;
-            end
-
-            fillWidth = 70 * values(i);
-            if fillWidth > 0
-                rectangle(barAxes, ...
-                    "Position", [24 y + 0.17 fillWidth 0.54], ...
-                    "FaceColor", barColor, ...
-                    "EdgeColor", barColor);
-            end
-
-            drawPixelText(barAxes, sprintf("%3d%%", round(values(i) * 100)), 94.8, y + 0.2, colors.white, 0.11);
+    function drawFruit(calories)
+        if calories <= 0
+            return;
         end
+        fruitScale = min(1.4, max(0.7, calories / 30));
+        rectangle(gameAxes, ...
+            "Position", [30.1 5.2 0.9 * fruitScale 0.9 * fruitScale], ...
+            "Curvature", [1 1], ...
+            "FaceColor", colors.red, ...
+            "EdgeColor", colors.pellet, ...
+            "LineWidth", 1.2);
+        rectangle(gameAxes, ...
+            "Position", [30.6 6.1 0.32 0.20], ...
+            "FaceColor", colors.green, ...
+            "EdgeColor", colors.green);
+        text(gameAxes, 28.7, 4.1, sprintf("%.0f KCAL", calories), ...
+            "FontName", "Courier New", "FontWeight", "bold", ...
+            "FontSize", 11, "Color", colors.text);
+    end
 
-        hold(barAxes, "off");
+    function value = metricNumber(name, defaultValue)
+        value = defaultValue;
+        if state.bundle.hasMetrics && isfield(state.bundle.metrics, name)
+            raw = state.bundle.metrics.(name);
+            if isnumeric(raw)
+                value = double(raw);
+            elseif ischar(raw) || isstring(raw)
+                parsed = str2double(string(raw));
+                if ~isnan(parsed)
+                    value = parsed;
+                end
+            end
+        end
+    end
+
+    function value = metricText(name, defaultValue)
+        value = string(defaultValue);
+        if state.bundle.hasMetrics && isfield(state.bundle.metrics, name)
+            raw = state.bundle.metrics.(name);
+            if ischar(raw) || isstring(raw)
+                value = string(raw);
+            elseif isnumeric(raw)
+                value = string(raw);
+            end
+        end
+    end
+
+    function outputDir = defaultOutputDir(name)
+        thisDir = fileparts(mfilename("fullpath"));
+        projectRoot = fileparts(fileparts(thisDir));
+        outputDir = fullfile(projectRoot, "outputs", name);
+    end
+
+    function color = scoreColor(value, inverse)
+        if nargin < 2
+            inverse = false;
+        end
+        if inverse
+            value = 100 - value;
+        end
+        if value >= 75
+            color = colors.green;
+        elseif value >= 45
+            color = colors.orange;
+        else
+            color = colors.red;
+        end
     end
 
     function drawPixelPacman(ax, x, y, color, scale)
@@ -498,28 +577,44 @@ drawAll();
             "1001001"
         };
         drawPixelShape(ax, pattern, x, y, color, scale);
-
-        eyeColor = [0 0 0];
         rectangle(ax, ...
             "Position", [x + 1.8 * scale y + 4.6 * scale 0.9 * scale 0.9 * scale], ...
-            "FaceColor", eyeColor, ...
-            "EdgeColor", eyeColor);
+            "FaceColor", [0 0 0], ...
+            "EdgeColor", [0 0 0]);
         rectangle(ax, ...
             "Position", [x + 4.4 * scale y + 4.6 * scale 0.9 * scale 0.9 * scale], ...
-            "FaceColor", eyeColor, ...
-            "EdgeColor", eyeColor);
+            "FaceColor", [0 0 0], ...
+            "EdgeColor", [0 0 0]);
     end
 end
 
-function label = makePixelLabel(parent, textValue, colorValue, fontSize)
+function textValue = truncateText(textValue, maxChars)
+textValue = string(textValue);
+if strlength(textValue) > maxChars
+    textValue = extractBefore(textValue, maxChars - 2) + "...";
+end
+end
+
+function panel = makePanel(parent, titleValue)
+panel = uipanel(parent, ...
+    "Title", titleValue, ...
+    "FontName", "Courier New", ...
+    "FontWeight", "bold", ...
+    "FontSize", 13, ...
+    "ForegroundColor", [1.00 0.95 0.72], ...
+    "BackgroundColor", [0.03 0.04 0.13]);
+end
+
+function label = makeHeaderLabel(parent, textValue, colorValue)
 label = uilabel(parent, ...
     "Text", textValue, ...
     "HorizontalAlignment", "center", ...
     "FontName", "Courier New", ...
     "FontWeight", "bold", ...
-    "FontSize", fontSize, ...
+    "FontSize", 17, ...
     "FontColor", colorValue, ...
     "BackgroundColor", [0.03 0.04 0.13]);
+label.Layout.Row = 1;
 end
 
 function button = makePixelButton(parent, textValue, bgColor, fontColor)
@@ -530,6 +625,7 @@ button = uibutton(parent, "push", ...
     "FontSize", 12, ...
     "BackgroundColor", bgColor, ...
     "FontColor", fontColor);
+button.Layout.Row = 1;
 end
 
 function styleAxes(ax, bgColor)
@@ -560,102 +656,5 @@ for row = 1:rowCount
                 "EdgeColor", color);
         end
     end
-end
-end
-
-function drawPixelText(ax, textValue, x, y, color, scale)
-letters = pixelFont();
-cursor = x;
-textValue = upper(char(textValue));
-
-for i = 1:numel(textValue)
-    ch = textValue(i);
-    if ch == ' '
-        cursor = cursor + 4 * scale;
-        continue;
-    end
-
-    key = sprintf("x%d", double(ch));
-    if isfield(letters, key)
-        drawPixelShape(ax, letters.(key), cursor, y, color, scale);
-        cursor = cursor + 6 * scale;
-    else
-        cursor = cursor + 4 * scale;
-    end
-end
-end
-
-function letters = pixelFont()
-p.A = {"01110"; "10001"; "10001"; "11111"; "10001"; "10001"; "10001"};
-p.C = {"01111"; "10000"; "10000"; "10000"; "10000"; "10000"; "01111"};
-p.D = {"11110"; "10001"; "10001"; "10001"; "10001"; "10001"; "11110"};
-p.E = {"11111"; "10000"; "10000"; "11110"; "10000"; "10000"; "11111"};
-p.F = {"11111"; "10000"; "10000"; "11110"; "10000"; "10000"; "10000"};
-p.G = {"01111"; "10000"; "10000"; "10011"; "10001"; "10001"; "01111"};
-p.H = {"10001"; "10001"; "10001"; "11111"; "10001"; "10001"; "10001"};
-p.I = {"11111"; "00100"; "00100"; "00100"; "00100"; "00100"; "11111"};
-p.K = {"10001"; "10010"; "10100"; "11000"; "10100"; "10010"; "10001"};
-p.L = {"10000"; "10000"; "10000"; "10000"; "10000"; "10000"; "11111"};
-p.M = {"10001"; "11011"; "10101"; "10101"; "10001"; "10001"; "10001"};
-p.N = {"10001"; "11001"; "10101"; "10011"; "10001"; "10001"; "10001"};
-p.O = {"01110"; "10001"; "10001"; "10001"; "10001"; "10001"; "01110"};
-p.P = {"11110"; "10001"; "10001"; "11110"; "10000"; "10000"; "10000"};
-p.R = {"11110"; "10001"; "10001"; "11110"; "10100"; "10010"; "10001"};
-p.S = {"01111"; "10000"; "10000"; "01110"; "00001"; "00001"; "11110"};
-p.T = {"11111"; "00100"; "00100"; "00100"; "00100"; "00100"; "00100"};
-p.U = {"10001"; "10001"; "10001"; "10001"; "10001"; "10001"; "01110"};
-p.V = {"10001"; "10001"; "10001"; "10001"; "10001"; "01010"; "00100"};
-p.W = {"10001"; "10001"; "10001"; "10101"; "10101"; "10101"; "01010"};
-p.Y = {"10001"; "10001"; "01010"; "00100"; "00100"; "00100"; "00100"};
-p.Z = {"11111"; "00001"; "00010"; "00100"; "01000"; "10000"; "11111"};
-p.exclam = {"00100"; "00100"; "00100"; "00100"; "00100"; "00000"; "00100"};
-p.dash = {"00000"; "00000"; "00000"; "11111"; "00000"; "00000"; "00000"};
-p.percent = {"11001"; "11010"; "00010"; "00100"; "01000"; "01011"; "10011"};
-p.zero = {"01110"; "10001"; "10011"; "10101"; "11001"; "10001"; "01110"};
-p.one = {"00100"; "01100"; "00100"; "00100"; "00100"; "00100"; "01110"};
-p.two = {"01110"; "10001"; "00001"; "00010"; "00100"; "01000"; "11111"};
-p.three = {"11110"; "00001"; "00001"; "01110"; "00001"; "00001"; "11110"};
-p.four = {"00010"; "00110"; "01010"; "10010"; "11111"; "00010"; "00010"};
-p.five = {"11111"; "10000"; "10000"; "11110"; "00001"; "00001"; "11110"};
-p.six = {"01111"; "10000"; "10000"; "11110"; "10001"; "10001"; "01110"};
-p.seven = {"11111"; "00001"; "00010"; "00100"; "01000"; "01000"; "01000"};
-p.eight = {"01110"; "10001"; "10001"; "01110"; "10001"; "10001"; "01110"};
-p.nine = {"01110"; "10001"; "10001"; "01111"; "00001"; "00001"; "11110"};
-
-names = fieldnames(p);
-letters = struct();
-for i = 1:numel(names)
-    name = names{i};
-    switch name
-        case 'exclam'
-            key = sprintf("x%d", double('!'));
-        case 'dash'
-            key = sprintf("x%d", double('-'));
-        case 'percent'
-            key = sprintf("x%d", double('%'));
-        case 'zero'
-            key = sprintf("x%d", double('0'));
-        case 'one'
-            key = sprintf("x%d", double('1'));
-        case 'two'
-            key = sprintf("x%d", double('2'));
-        case 'three'
-            key = sprintf("x%d", double('3'));
-        case 'four'
-            key = sprintf("x%d", double('4'));
-        case 'five'
-            key = sprintf("x%d", double('5'));
-        case 'six'
-            key = sprintf("x%d", double('6'));
-        case 'seven'
-            key = sprintf("x%d", double('7'));
-        case 'eight'
-            key = sprintf("x%d", double('8'));
-        case 'nine'
-            key = sprintf("x%d", double('9'));
-        otherwise
-            key = sprintf("x%d", double(name));
-    end
-    letters.(key) = p.(name);
 end
 end
