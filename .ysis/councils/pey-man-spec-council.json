@@ -28,6 +28,14 @@
       "instruction": "Act as implementation architect. Optimize for MATLAB Online feasibility, repository hygiene, reproducible scripts, testability, and commit/push discipline. Reject over-scoped features that threaten the baseline."
     },
     {
+      "id": "pey-demo-gemini",
+      "platform": "gemini",
+      "role": "reviewer",
+      "persona": "default",
+      "effort": "medium",
+      "instruction": "Act as demo and rubric reviewer. Optimize for judge-facing clarity, presentation quality, and whether the concept can be explained in under five minutes. Flag confusing scoring, weak visuals, or any hidden dependency that could break the live demo."
+    },
+    {
       "id": "pey-chair-claude",
       "platform": "claude",
       "role": "chairman",
