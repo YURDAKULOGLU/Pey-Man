@@ -1,6 +1,6 @@
-# Pey-Man — 5-Minute Demo Script (Timed)
+# Pey-Man — 5-Minute Demo Script (Solo, Timed)
 
-Read out loud at 150 wpm. Total: **5:00**. Cuts marked with `▶ [action]`.
+Read out loud at 150 wpm. **Solo presenter: YURDAKULOGLU.** Total: **5:00**. Cuts marked with `▶ [action]`.
 
 ---
 
@@ -72,7 +72,7 @@ Read out loud at 150 wpm. Total: **5:00**. Cuts marked with `▶ [action]`.
 
 > "Now the part you came for. Everything you see is one MATLAB `uifigure`."
 
-▶ Mertrenlab takes over here, pans through:
+▶ Pan through:
 
 1. Activity Mix bars
 2. Calories by Activity
@@ -110,7 +110,7 @@ Read out loud at 150 wpm. Total: **5:00**. Cuts marked with `▶ [action]`.
 | Sensors | 1:00 | 1:30 |
 | Model | 1:00 | 2:30 |
 | Fatigue | 1:00 | 3:30 |
-| UI (Mert) | 1:00 | 4:30 |
+| UI walkthrough | 1:00 | 4:30 |
 | Close | 0:30 | 5:00 |
 
-**Slip rules**: if you're 15s behind by 2:30, cut sensor description; if behind by 3:30, hand off to Mert immediately and shorten UI tour.
+**Slip rules**: if you're 15s behind by 2:30, cut sensor description; if behind by 3:30, shorten the UI tour (skip 2 panels, jump to the dashboard wide shot).
