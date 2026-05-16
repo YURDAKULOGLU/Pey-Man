@@ -14,8 +14,9 @@ options = withDefault(options, "bodyMassKg", 70);
 options = withDefault(options, "strideLengthM", 0.72);
 options = withDefault(options, "enableCoachApi", false);
 options = withDefault(options, "coachModel", "gpt-4o-mini");
+options = withDefault(options, "renderPlots", true);
 
-session = loadSessionData(options);
+session = resolveSession(options);
 processed = preprocessSignal(session);
 windows = windowizeSignal(processed, options.windowSeconds, options.windowOverlap);
 features = extractFeatures(session, processed, windows);
@@ -24,7 +25,7 @@ activityLogFile = getOption(options, "activityLogFile", "");
 if ~options.useML
     activityLogFile = "";
 end
-model = trainActivityClassifier(activityLogFile, options);
+model = resolveModel(options, activityLogFile);
 features = classifyActivity(features, model);
 
 baseline = computeBaseline(features, options.baselineSeconds);
@@ -34,6 +35,7 @@ stepsDistance = computeStepsDistance(session, features, cadenceByWindow, options
 [calories, caloriesByActivity, sportSummary] = computeCalories(features, options);
 qualityScore = computeQualityScore(features, fatigueIndex);
 confidenceIndex = computeConfidenceIndex(session, features);
+[currentActivity, currentConfidence, currentWindowCount] = summarizeCurrentActivity(features);
 
 summary = struct();
 summary.FatigueIndex = fatigueIndex;
@@ -56,13 +58,23 @@ summary.ActiveMinutes = sum(seconds(features.activityLabel ~= "sit")) / 60;
 summary.ActivityMix = activityMixTable(features);
 summary.PeakFatigueMinute = fatigueTimeline.peakMinute(1);
 summary.PeakFatigueLabel = fatigueTimeline.peakLabel(1);
+summary.CurrentActivity = currentActivity;
+summary.CurrentActivityConfidence = currentConfidence;
+summary.CurrentActivityWindowCount = currentWindowCount;
+summary.SourceKind = getMetaValue(session.meta, "sourceKind", "mat_file");
+summary.SourceName = getMetaValue(session.meta, "sourceName", "");
+summary.LiveSampleCount = height(session.acceleration);
+summary.LivePositionSampleCount = height(session.position);
+summary.LastSampleSeconds = round(processed.timeSec(end), 2);
 summary.CoachAdvice = generateCoachAdvice(summary, options);
 
 summaryText = generateSessionSummary(summary);
 
-plotSensorOverview(session, processed, features);
-plotFatigueTimeline(fatigueTimeline);
-createDashboard(features, fatigueTimeline, summary);
+if options.renderPlots
+    plotSensorOverview(session, processed, features);
+    plotFatigueTimeline(fatigueTimeline);
+    createDashboard(features, fatigueTimeline, summary);
+end
 
 result = struct();
 result.session = session;
@@ -78,6 +90,56 @@ end
 function options = withDefault(options, name, value)
 if ~isfield(options, name)
     options.(name) = value;
+end
+end
+
+function session = resolveSession(options)
+if isfield(options, "sessionOverride") && isstruct(options.sessionOverride) && ...
+        isfield(options.sessionOverride, "acceleration")
+    session = normalizeSessionOverride(options.sessionOverride, options);
+else
+    session = loadSessionData(options);
+end
+end
+
+function session = normalizeSessionOverride(session, options)
+required = ["X", "Y", "Z"];
+if ~isfield(session, "acceleration") || ~istimetable(session.acceleration) || ...
+        ~all(ismember(required, string(session.acceleration.Properties.VariableNames)))
+    error("PeyMan:BadSessionOverride", ...
+        "sessionOverride.acceleration must be a timetable with X, Y, Z variables.");
+end
+
+session.acceleration = sortrows(session.acceleration(:, required));
+session.acceleration = rmmissing(session.acceleration);
+
+if ~isfield(session, "position") || ~istimetable(session.position) || height(session.position) == 0
+    session.position = timetable();
+else
+    session.position = sortrows(session.position);
+end
+
+if ~isfield(session, "meta") || ~isstruct(session.meta)
+    session.meta = struct();
+end
+
+session.meta = ensureMetaField(session.meta, "sourceName", getOption(options, "dataFile", ""));
+session.meta = ensureMetaField(session.meta, "demoMode", getOption(options, "demoMode", false));
+session.meta = ensureMetaField(session.meta, "sourceKind", "session_override");
+session.meta.hasGPS = ~isempty(session.position) && height(session.position) > 1;
+end
+
+function meta = ensureMetaField(meta, name, value)
+if ~isfield(meta, name)
+    meta.(name) = value;
+end
+end
+
+function model = resolveModel(options, activityLogFile)
+if isfield(options, "modelOverride") && ~isempty(options.modelOverride)
+    model = options.modelOverride;
+else
+    model = trainActivityClassifier(activityLogFile, options);
 end
 end
 
@@ -97,4 +159,42 @@ for i = 1:numel(labels)
     minutes(i) = sum(seconds(features.activityLabel == labels{i})) / 60;
 end
 mix = table(string(labels), minutes, 'VariableNames', ["activity", "minutes"]);
+end
+
+function [activity, confidence, windowCount] = summarizeCurrentActivity(features)
+windowCount = min(3, height(features));
+if windowCount <= 0
+    activity = "unknown";
+    confidence = 0;
+    return;
+end
+
+tail = height(features) - windowCount + 1:height(features);
+labels = string(features.activityLabel(tail));
+valid = labels ~= "";
+labels = labels(valid);
+if isempty(labels)
+    activity = "unknown";
+else
+    labels = categorical(labels);
+    activity = string(mode(labels));
+end
+
+confidence = round(100 * mean(features.modelConfidence(tail), "omitnan"), 1);
+if ~isfinite(confidence)
+    confidence = 0;
+end
+end
+
+function value = getMetaValue(meta, name, defaultValue)
+if isfield(meta, name)
+    raw = meta.(name);
+    if isstring(raw)
+        value = char(raw);
+    else
+        value = raw;
+    end
+else
+    value = defaultValue;
+end
 end

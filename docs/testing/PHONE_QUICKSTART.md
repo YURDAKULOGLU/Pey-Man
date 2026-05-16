@@ -26,6 +26,11 @@ In MATLAB Mobile:
    - ⚪ Orientation / Angular Velocity (optional)
 4. (Optional) tap settings gear → enable **Background logging** so screen-off keeps recording.
 
+Live rehearsal alternative:
+
+- For `runPeyManLiveStream`, keep **Stream to MATLAB** selected instead of **Log**.
+- Use live streaming only for rehearsal or testing. The judged demo should still work from bundled, synthetic, or local `.mat` data.
+
 ---
 
 ## STEP 3 · Record 4 Sessions (~10 min total)
@@ -79,6 +84,26 @@ Validation accuracy: XX.X% (held-out N rows)
 ```
 
 And `outputs/<timestamp>/` will appear with `latest_metrics.json`.
+
+---
+
+## STEP 5B · Optional Live Stream (~60 sec)
+
+If you want MATLAB Online to react to the phone in near real time:
+
+```matlab
+cd Pey-Man
+runPeyManLiveStream
+```
+
+Expected behavior:
+
+- MATLAB creates a `mobiledev` connection,
+- live metrics are exported under `outputs/live/`,
+- the pixel UI auto-refreshes from that folder,
+- closing the UI or pressing Ctrl+C stops the live loop.
+
+Do not use this as the only demo path. Keep the file-based path above working.
 
 ---
 

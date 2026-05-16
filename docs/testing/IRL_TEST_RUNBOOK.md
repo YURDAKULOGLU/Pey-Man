@@ -18,6 +18,12 @@ Get Pey-Man ready for real phone-sensor testing without committing private raw d
 
 The competition instructions warn that MATLAB Mobile and MATLAB Online may not stay signed in at the same time. Record first, then test in MATLAB Online.
 
+Live-stream note:
+
+- MATLAB Mobile also supports **Stream to MATLAB** through `mobiledev`.
+- Use that mode only for live rehearsal or operator testing.
+- Do not make the judged demo depend on a live phone connection.
+
 ## Recording Plan
 
 Record these sessions for issue #10:
@@ -58,6 +64,28 @@ If no local data is present, `runLocalDataSession` falls back to `runSyntheticFa
 The runner checks the issue #10 filenames first, then the older `walk.mat`,
 `run.mat`, and `sit.mat` names for compatibility.
 
+## Optional Live Stream In MATLAB Online
+
+From repository root:
+
+```matlab
+runPeyManLiveStream
+```
+
+Prerequisites:
+
+- MATLAB Mobile and MATLAB Online use the same MathWorks account.
+- In MATLAB Mobile, open `Sensors`.
+- Set `Stream to` -> `MATLAB`.
+- Keep Acceleration enabled; Position is optional.
+
+Stop / cleanup:
+
+- Close the live UI window, or
+- press Ctrl+C in MATLAB Online.
+
+The live command stops `mobiledev.Logging` on shutdown.
+
 ## Evidence To Capture
 
 For each IRL run, record:
@@ -72,3 +100,8 @@ For each IRL run, record:
 - any error or strange plot.
 
 Use aggregate metrics and screenshots in the repo. Commit raw GPS/person data only if the team explicitly approves.
+
+Privacy note for live mode:
+
+- The stream still comes from personal device sensors.
+- Treat it like local private data even if temporary JSON and CSV are written under `outputs/live/`.

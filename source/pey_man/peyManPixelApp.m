@@ -1,4 +1,4 @@
-function fig = peyManPixelApp(metricsSource)
+function fig = peyManPixelApp(metricsSource, uiOptions)
 %PEYMANPIXELAPP Presentation-ready MATLAB-only Pac-Man fitness UI.
 %
 % The app is intentionally model-driven: it reads exported pipeline artifacts
@@ -7,8 +7,13 @@ function fig = peyManPixelApp(metricsSource)
 if nargin < 1
     metricsSource = "";
 end
+if nargin < 2
+    uiOptions = struct();
+end
 
 state.bundle = loadPeyManUiMetrics(metricsSource);
+state.autoRefreshSeconds = getUiOption(uiOptions, "autoRefreshSeconds", 0);
+state.refreshTimer = [];
 
 colors.bg = [0.02 0.02 0.08];
 colors.panel = [0.03 0.04 0.13];
@@ -89,7 +94,7 @@ styleAxes(timelineAxes, colors.bg);
 side = uigridlayout(root, [5 1]);
 side.Layout.Row = 1;
 side.Layout.Column = 2;
-side.RowHeight = {56, 255, 155, "1x", 58};
+side.RowHeight = {56, 278, 155, "1x", 58};
 side.Padding = [0 0 0 0];
 side.RowSpacing = 12;
 side.BackgroundColor = colors.bg;
@@ -107,9 +112,9 @@ statusLabel.Layout.Column = 1;
 
 metricsPanel = makePanel(side, "SESSION METRICS");
 metricsPanel.Layout.Row = 2;
-metricGrid = uigridlayout(metricsPanel, [8 2]);
+metricGrid = uigridlayout(metricsPanel, [9 2]);
 metricGrid.ColumnWidth = {150, "1x"};
-metricGrid.RowHeight = repmat({22}, 1, 8);
+metricGrid.RowHeight = repmat({22}, 1, 9);
 metricGrid.Padding = [12 18 12 12];
 metricGrid.RowSpacing = 3;
 metricGrid.ColumnSpacing = 8;
@@ -118,11 +123,12 @@ metricGrid.BackgroundColor = colors.panel;
 metricLabels.quality = addMetricRow(metricGrid, "QUALITY", 1);
 metricLabels.fatigue = addMetricRow(metricGrid, "FATIGUE", 2);
 metricLabels.confidence = addMetricRow(metricGrid, "CONFIDENCE", 3);
-metricLabels.sport = addMetricRow(metricGrid, "SPORT", 4);
-metricLabels.steps = addMetricRow(metricGrid, "STEPS", 5);
-metricLabels.distance = addMetricRow(metricGrid, "DISTANCE", 6);
-metricLabels.cadence = addMetricRow(metricGrid, "CADENCE", 7);
-metricLabels.calories = addMetricRow(metricGrid, "CALORIES", 8);
+metricLabels.current = addMetricRow(metricGrid, "CURRENT", 4);
+metricLabels.sport = addMetricRow(metricGrid, "SPORT", 5);
+metricLabels.steps = addMetricRow(metricGrid, "STEPS", 6);
+metricLabels.distance = addMetricRow(metricGrid, "DISTANCE", 7);
+metricLabels.cadence = addMetricRow(metricGrid, "CADENCE", 8);
+metricLabels.calories = addMetricRow(metricGrid, "CALORIES", 9);
 
 activityPanel = makePanel(side, "ACTIVITY + CALORIES");
 activityPanel.Layout.Row = 3;
@@ -150,10 +156,10 @@ logLabel = uilabel(logGrid, ...
 logLabel.Layout.Row = 1;
 logLabel.Layout.Column = 1;
 
-buttonGrid = uigridlayout(side, [1 3]);
+buttonGrid = uigridlayout(side, [1 4]);
 buttonGrid.Layout.Row = 5;
 buttonGrid.Layout.Column = 1;
-buttonGrid.ColumnWidth = {"1x", "1x", "1x"};
+buttonGrid.ColumnWidth = {"1x", "1x", "1x", "1x"};
 buttonGrid.Padding = [0 0 0 0];
 buttonGrid.ColumnSpacing = 8;
 buttonGrid.BackgroundColor = colors.bg;
@@ -170,7 +176,12 @@ syntheticButton = makePixelButton(buttonGrid, "SYNTH", colors.red, colors.white)
 syntheticButton.Layout.Column = 3;
 syntheticButton.ButtonPushedFcn = @loadSynthetic;
 
+liveButton = makePixelButton(buttonGrid, "LIVE", colors.green, [0 0 0]);
+liveButton.Layout.Column = 4;
+liveButton.ButtonPushedFcn = @loadLive;
+
 drawAll();
+configureRefreshTimer();
 
     function label = addMetricRow(parent, name, row)
         nameLabel = uilabel(parent, ...
@@ -210,12 +221,19 @@ drawAll();
         drawAll();
     end
 
+    function loadLive(varargin)
+        state.bundle = loadPeyManUiMetrics(defaultOutputDir("live"));
+        drawAll();
+    end
+
     function drawAll()
         quality = metricNumber("workoutQualityScore", 0);
         fatigue = metricNumber("fatigueIndex", 0);
         confidence = metricNumber("confidenceIndex", 0);
         validationAcc = metricNumber("validationAccuracy", metricNumber("modelValidationAccuracy", NaN));
         score = round(quality * 1000 + confidence * 100);
+        isLiveSource = metricText("sourceKind", "") == "live_mobile_stream";
+        currentActivity = upper(char(metricText("currentActivity", "N/A")));
 
         scoreLabel.Text = sprintf("SCORE %06d", score);
         levelLabel.Text = sprintf("LEVEL %02d", max(1, ceil(max(quality, 1) / 20)));
@@ -232,6 +250,9 @@ drawAll();
         elseif fatigue >= 70
             statusLabel.Text = "FATIGUE!";
             statusLabel.FontColor = colors.red;
+        elseif isLiveSource && metricAvailable("currentActivity")
+            statusLabel.Text = "LIVE " + currentActivity;
+            statusLabel.FontColor = colors.ghost2;
         elseif quality >= 75
             statusLabel.Text = "POWER RUN";
             statusLabel.FontColor = colors.green;
@@ -243,6 +264,7 @@ drawAll();
         metricLabels.quality.Text = char(metricDisplayNumber("workoutQualityScore", "%.1f / 100"));
         metricLabels.fatigue.Text = char(metricDisplayNumber("fatigueIndex", "%.1f / 100"));
         metricLabels.confidence.Text = char(metricDisplayNumber("confidenceIndex", "%.1f %%"));
+        metricLabels.current.Text = char(metricDisplayText("currentActivity"));
         metricLabels.sport.Text = char(metricDisplayText("detectedSport"));
         metricLabels.steps.Text = char(metricDisplayNumber("stepCount", "%.0f"));
         metricLabels.distance.Text = char(metricDisplayNumber("distanceKm", "%.2f km"));
@@ -269,6 +291,8 @@ drawAll();
         modelAcc = metricNumber("modelTrainingAccuracy", NaN);
         validationAcc = metricNumber("validationAccuracy", metricNumber("modelValidationAccuracy", NaN));
         validationRows = metricNumber("validationRows", metricNumber("modelValidationRows", 0));
+        sourceKind = metricText("sourceKind", "mat_file");
+        currentActivity = metricText("currentActivity", "unknown");
         if strlength(coachText) == 0
             coachText = "Coach advice unavailable.";
         end
@@ -287,17 +311,20 @@ drawAll();
         textValue = sprintf([ ...
             '%s\n' ...
             'QUALITY %.1f | FATIGUE %.1f | TRUST %.1f%%\n' ...
-            '%s: %.0f steps, %.2f km, %.1f kcal.\n' ...
+            '%s | NOW %s | %.0f steps, %.2f km, %.1f kcal.\n' ...
             'FLOW: sensors -> ML -> fatigue -> game progress.\n' ...
+            'SOURCE: %s\n' ...
             'COACH (%s): %s'], ...
             modelLine, ...
             metricNumber("workoutQualityScore", 0), ...
             metricNumber("fatigueIndex", 0), ...
             metricNumber("confidenceIndex", 0), ...
             char(metricText("detectedSport", "Session")), ...
+            upper(char(currentActivity)), ...
             metricNumber("stepCount", 0), ...
             metricNumber("distanceKm", 0), ...
             metricNumber("estimatedCalories", 0), ...
+            upper(char(sourceKind)), ...
             char(sourceText), char(coachText));
     end
 
@@ -578,6 +605,38 @@ drawAll();
         outputDir = fullfile(projectRoot, "outputs", name);
     end
 
+    function configureRefreshTimer()
+        if state.autoRefreshSeconds <= 0
+            return;
+        end
+        state.refreshTimer = timer( ...
+            "ExecutionMode", "fixedSpacing", ...
+            "BusyMode", "drop", ...
+            "Period", state.autoRefreshSeconds, ...
+            "TimerFcn", @safeAutoRefresh);
+        fig.CloseRequestFcn = @closeFigure;
+        start(state.refreshTimer);
+    end
+
+    function safeAutoRefresh(varargin)
+        if ~isvalid(fig)
+            return;
+        end
+        try
+            refreshCurrent();
+            drawnow limitrate nocallbacks;
+        catch
+        end
+    end
+
+    function closeFigure(varargin)
+        if ~isempty(state.refreshTimer) && isvalid(state.refreshTimer)
+            stop(state.refreshTimer);
+            delete(state.refreshTimer);
+        end
+        delete(fig);
+    end
+
     function color = scoreColor(value, inverse)
         if nargin < 2
             inverse = false;
@@ -637,6 +696,14 @@ function textValue = truncateText(textValue, maxChars)
 textValue = string(textValue);
 if strlength(textValue) > maxChars
     textValue = extractBefore(textValue, maxChars - 2) + "...";
+end
+end
+
+function value = getUiOption(options, name, defaultValue)
+if isfield(options, name)
+    value = options.(name);
+else
+    value = defaultValue;
 end
 end
 

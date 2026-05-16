@@ -31,6 +31,16 @@ runLocalDataSession        % expects a .mat under ../../local_data/
 Bundled sample metrics live under `outputs/<session>/latest_metrics.json` and are
 loaded automatically by `runPeyManPixelApp` when no session is passed.
 
+Optional live stream path for MATLAB Online rehearsal:
+
+```matlab
+cd Pey-Man
+runPeyManLiveStream
+```
+
+Live streaming is opt-in. The judged demo path remains `main`,
+`runSyntheticFatigueDemo`, and file-based `.mat` replay.
+
 ## MATLAB Online (one-click)
 
 ```
