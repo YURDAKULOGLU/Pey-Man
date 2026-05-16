@@ -1,0 +1,5 @@
+activity,sport,minutes,calories,averageKcalPerMinute,met
+sit,Rest / Recovery,0.03,0,1.47,1.2
+walk,Walking,6.06,26,4.29,3.5
+run,Running,0,0,0,8
+unknown,Unknown,0,0,0,2

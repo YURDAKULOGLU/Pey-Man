@@ -12,6 +12,7 @@ scratch/
 runtime/
 local_data/
 data/
+!docs/presentation/data/
 models/
 
 # MATLAB generated artifacts
