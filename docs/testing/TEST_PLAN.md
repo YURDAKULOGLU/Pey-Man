@@ -25,6 +25,7 @@ The grading rubric is:
 | Local MATLAB | Fast model validation when MATLAB starts cleanly. | Programmer |
 | MATLAB Online | Final competition runtime proof. | Programmer + team |
 | MATLAB Mobile | Real phone sensor data collection. | Athlete |
+| mobiledev live stream | Optional MATLAB Online rehearsal path using streamed phone sensors. | Programmer + athlete |
 | Demo rehearsal | English presentation under 5 minutes. | Marketing + all |
 
 ## GitHub / CI Test
@@ -116,6 +117,26 @@ Expected:
 - output artifacts are written under `outputs/<session-name>/`,
 - no raw private `.mat` file is committed.
 
+## Optional mobiledev Live Stream Test
+
+Use this only as a stretch rehearsal path:
+
+```matlab
+runPeyManLiveStream
+```
+
+Expected:
+
+- MATLAB Online connects to `mobiledev`,
+- live metrics are exported under `outputs/live/`,
+- the UI can refresh from `outputs/live/latest_metrics.json`,
+- closing the UI or interrupting the command stops the loop cleanly.
+
+Failure policy:
+
+- if `mobiledev` is unavailable, fall back to `main`, `runSyntheticFatigueDemo`, or local `.mat` replay,
+- live streaming must not block the judged demo.
+
 ## Rule Fallback Test
 
 This verifies that the demo does not depend on ML toolbox availability:
@@ -179,6 +200,7 @@ Raw `.mat` files with personal/GPS data should stay local unless the team explic
 - [ ] Synthetic fallback run passes.
 - [ ] Rule fallback run passes.
 - [ ] Pixel UI opens.
+- [ ] Optional live-stream smoke test passes or is explicitly skipped.
 - [ ] One team-recorded session runs or synthetic fallback is accepted.
 - [ ] `VERIFY.md` is updated with exact commands and outputs.
 - [ ] Demo script is under 5 minutes.

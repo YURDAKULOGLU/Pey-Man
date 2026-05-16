@@ -28,6 +28,16 @@ metrics.cadenceSpm = result.summary.CadenceSpm;
 metrics.activeMinutes = result.summary.ActiveMinutes;
 metrics.peakFatigueMinute = result.summary.PeakFatigueMinute;
 metrics.peakFatigueLabel = result.summary.PeakFatigueLabel;
+metrics.currentActivity = result.summary.CurrentActivity;
+metrics.currentActivityConfidence = result.summary.CurrentActivityConfidence;
+metrics.currentActivityWindowCount = result.summary.CurrentActivityWindowCount;
+metrics.sourceKind = result.summary.SourceKind;
+metrics.sourceName = result.summary.SourceName;
+metrics.liveSampleCount = result.summary.LiveSampleCount;
+metrics.livePositionSampleCount = result.summary.LivePositionSampleCount;
+metrics.lastSampleSeconds = result.summary.LastSampleSeconds;
+metrics.lastUpdatedAt = char(datetime("now", "TimeZone", "UTC", ...
+    "Format", "yyyy-MM-dd'T'HH:mm:ss'Z'"));
 metrics.coachAdvice = result.summary.CoachAdvice.text;
 metrics.coachAdviceSource = result.summary.CoachAdvice.source;
 metrics.modelType = result.model.type;

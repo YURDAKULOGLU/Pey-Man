@@ -13,6 +13,7 @@ phone sensors -> normalized session -> windows -> features -> activity labels
 
 - `source/pey_man/main.m`: P0 model/demo entrypoint.
 - `runPeyManPixelApp.m`: Pac-Man inspired UI entrypoint.
+- `runPeyManLiveStream.m`: optional MATLAB Online live-stream entrypoint.
 - `source/pey_man/peyManPixelApp.m`: MATLAB-only UI.
 
 The model pipeline and pixel UI are separate until V3. A working model is more important than UI polish.
@@ -21,7 +22,7 @@ The model pipeline and pixel UI are separate until V3. A working model is more i
 
 | Layer | Files | Responsibility |
 | --- | --- | --- |
-| Input | `loadSessionData.m` | Load `.mat` files, normalize acceleration/GPS timetables, generate demo fallback if needed. |
+| Input | `loadSessionData.m`, `peyManLiveStream.m` | Load `.mat` files or `mobiledev` stream data, normalize acceleration/GPS timetables, generate demo fallback if needed. |
 | Preprocess | `preprocessSignal.m` | Magnitude, baseline/gravity estimate, dynamic acceleration. |
 | Windowing | `windowizeSignal.m` | 4 second windows with 75 percent overlap. |
 | Features | `extractFeatures.m`, `bandPowerWelch.m` | Motion intensity, active ratio, peaks, dominant cadence frequency, spectral power, GPS speed. |
@@ -41,6 +42,13 @@ ActivityLogs.mat -> labeled windows -> fitctree -> sit/walk/run labels
 
 Fatigue and quality scores are formulas. This is intentional: judges can inspect the score logic and the demo does not depend on a fragile black-box fatigue model.
 
+## Input Modes
+
+- Baseline mode: bundled sample data, synthetic fallback, or local `.mat` recordings.
+- Optional live mode: MATLAB Mobile streams through `mobiledev`, accumulates a rolling buffer, then reuses the same feature and scoring pipeline through `sessionOverride`.
+
+Live mode is an additive operator surface. It must not replace the clean-checkout demo path.
+
 ## No-Hardcode Contract
 
 - Source code must not contain local absolute paths such as `C:\...` or `C:/...`.
@@ -59,4 +67,3 @@ The CI hygiene gate checks:
 - documentation references remain aligned with `source/pey_man/main.m`.
 
 MATLAB execution is still verified locally and in MATLAB Online; GitHub CI is a lightweight collaboration guard, not the full numerical validator.
-

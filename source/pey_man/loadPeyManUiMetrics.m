@@ -17,7 +17,7 @@ bundle.metrics = struct();
 bundle.activityMix = table();
 bundle.caloriesByActivity = table();
 bundle.fatigueTimeline = table();
-bundle.statusMessage = "No exported metrics found. Run main or runSyntheticFatigueDemo first.";
+bundle.statusMessage = "No exported metrics found. Run main, runSyntheticFatigueDemo, or runPeyManLiveStream first.";
 
 if strlength(string(sourceDir)) == 0
     return;
@@ -62,6 +62,8 @@ outputsRoot = fullfile(projectRoot, "outputs");
 candidates = [
     fullfile(outputsRoot, "example_file")
     fullfile(outputsRoot, "synthetic")
+    fullfile(outputsRoot, "live")
+    fullfile(outputsRoot, "live_current")
     fullfile(outputsRoot, "latest")
     fullfile(outputsRoot, "sample_demo")
 ];

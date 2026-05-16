@@ -38,6 +38,14 @@ cd ../..
 runPeyManPixelApp("outputs/synthetic")
 ```
 
+Optional rehearsal garnish:
+
+```matlab
+runPeyManLiveStream
+```
+
+Use live streaming only if the operator has already tested it. It is not the primary judged path.
+
 ## Demo Narrative
 
 Pey-Man is not just counting steps. It looks at how movement changes during a workout and turns that into a fatigue and workout quality summary.

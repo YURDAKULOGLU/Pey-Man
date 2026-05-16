@@ -2,6 +2,8 @@
 
 Use this path if MATLAB Online is slow, unavailable, or not authenticated during judging.
 
+Do not replace this fallback with `mobiledev` live streaming. Live streaming is optional rehearsal polish, not the safety path.
+
 ## Local Launch
 
 From a local laptop with MATLAB R2025b:
