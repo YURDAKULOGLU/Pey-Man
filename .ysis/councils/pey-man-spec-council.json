@@ -1,0 +1,40 @@
+{
+  "id": "pey-man-spec-council",
+  "name": "Pey-Man Specification Council",
+  "description": "Project-specific YSIS council for deciding the Pey-Man hackathon starter concept, technical spec, and worker goals without GLM dependency.",
+  "minimumConsensus": 2,
+  "chairmanModel": "pey-chair-claude",
+  "parallelFirstRound": true,
+  "persistPartialState": true,
+  "memberTimeoutSeconds": null,
+  "chairmanTimeoutSeconds": null,
+  "members": [
+    {
+      "id": "pey-product-kimi",
+      "platform": "kimi",
+      "role": "reviewer",
+      "persona": "hermes",
+      "promptModel": "kimi-k2.5",
+      "thinking": "high",
+      "instruction": "Act as product strategist. Optimize for hackathon scoring, demo clarity, narrative strength, and avoiding fragile novelty. If the Kimi runtime is unavailable, fail loud with a short unavailable note."
+    },
+    {
+      "id": "pey-implementation-codex",
+      "platform": "codex",
+      "role": "reviewer",
+      "persona": "default",
+      "promptModel": "gpt-5.4",
+      "effort": "high",
+      "instruction": "Act as implementation architect. Optimize for MATLAB Online feasibility, repository hygiene, reproducible scripts, testability, and commit/push discipline. Reject over-scoped features that threaten the baseline."
+    },
+    {
+      "id": "pey-chair-claude",
+      "platform": "claude",
+      "role": "chairman",
+      "persona": "default",
+      "promptModel": "sonnet",
+      "effort": "high",
+      "instruction": "Synthesize the final executable specification. Require a clear starter decision, data contract, algorithm, demo narrative, deferred-scope list, and worker-ready next steps. Mark degraded evidence if any member returns an empty or placeholder answer."
+    }
+  ]
+}
