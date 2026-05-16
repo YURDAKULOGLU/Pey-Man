@@ -478,20 +478,69 @@ drawAll();
             "LineWidth", 1.2);
     end
 
-    function drawPellets(progress)
-        pelletXs = 5:1.6:29;
-        collectedCount = floor(numel(pelletXs) * progress / 100);
-        for i = 1:numel(pelletXs)
-            if i <= collectedCount
-                pelletColor = [0.08 0.08 0.12];
+    function drawPellets(~)
+        taskNames = ["STEPS 5K", "ACTIVE 20m", "DIST 1KM", "CALS 100", ...
+                     "QUALITY 50", "SENSOR 60", "CADENCE", "MODEL .8"];
+        taskDone = [
+            metricNumber("stepCount", 0) >= 5000;
+            metricNumber("activeMinutes", 0) >= 20;
+            metricNumber("distanceKm", 0) >= 1.0;
+            metricNumber("estimatedCalories", 0) >= 100;
+            metricNumber("workoutQualityScore", 0) >= 50;
+            metricNumber("confidenceIndex", 0) >= 60;
+            metricNumber("cadenceSpm", 0) > 0;
+            metricNumber("validationAccuracy", 0) >= 0.8
+        ];
+
+        pelletXs = linspace(5.2, 28.8, numel(taskNames));
+        pelletY = 11.25;
+        labelY = pelletY + 1.15;
+
+        doneFill = [0.06 0.28 0.14];
+        doneEdge = [0.32 0.92 0.55];
+        doneText = [0.40 0.98 0.62];
+
+        for i = 1:numel(taskNames)
+            x = pelletXs(i);
+            if taskDone(i)
+                rectangle(gameAxes, ...
+                    "Position", [x pelletY 0.32 0.32], ...
+                    "FaceColor", doneFill, ...
+                    "EdgeColor", doneEdge, ...
+                    "LineWidth", 0.9);
+                text(gameAxes, x + 0.16, labelY, taskNames(i) + " *", ...
+                    "FontName", "Courier New", "FontSize", 7, "FontWeight", "bold", ...
+                    "HorizontalAlignment", "center", "Color", doneText);
             else
-                pelletColor = colors.pellet;
+                rectangle(gameAxes, ...
+                    "Position", [x pelletY 0.30 0.30], ...
+                    "FaceColor", colors.pellet, ...
+                    "EdgeColor", colors.pellet);
+                text(gameAxes, x + 0.15, labelY, taskNames(i), ...
+                    "FontName", "Courier New", "FontSize", 7, "FontWeight", "bold", ...
+                    "HorizontalAlignment", "center", "Color", colors.muted);
             end
-            rectangle(gameAxes, ...
-                "Position", [pelletXs(i) 11.25 0.30 0.30], ...
-                "FaceColor", pelletColor, ...
-                "EdgeColor", pelletColor);
         end
+
+        completedCount = sum(taskDone);
+        completionRatio = completedCount / numel(taskNames);
+        if completionRatio >= 0.75
+            flashMsg = "NICE WORK!";
+            flashColor = doneText;
+        elseif completionRatio >= 0.45
+            flashMsg = "BUILDING UP!";
+            flashColor = colors.pellet;
+        elseif completionRatio > 0
+            flashMsg = "KEEP GOING";
+            flashColor = colors.muted;
+        else
+            flashMsg = "DAILY MAZE";
+            flashColor = colors.muted;
+        end
+        text(gameAxes, 17.0, 13.55, ...
+            sprintf("DAILY TASKS %d/%d  -  %s", completedCount, numel(taskNames), flashMsg), ...
+            "FontName", "Courier New", "FontWeight", "bold", "FontSize", 10, ...
+            "HorizontalAlignment", "center", "Color", flashColor);
     end
 
     function drawFruit(calories)
