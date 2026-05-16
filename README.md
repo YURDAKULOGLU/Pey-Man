@@ -38,6 +38,11 @@ runPeyManPixelApp
 
 The UI uses a Pac-Man inspired fitness loop: Pey-Man moves toward the goal pellets as daily fitness targets are completed, while the ghost moves closer when targets are missed.
 
+UI design notes:
+
+- `docs/UI_CONCEPT_TR.md` - Turkish product and visual concept for the MATLAB-only Pac-Man style UI.
+- `docs/UI_FEATURES_TR.md` - Turkish feature ideas for model-connected UI modes and demo flow.
+
 ## MATLAB Online Test
 
 Open the model entrypoint in MATLAB Online:
