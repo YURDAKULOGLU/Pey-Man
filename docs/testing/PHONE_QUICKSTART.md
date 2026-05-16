@@ -110,7 +110,8 @@ the synthetic live stream instead of crashing. That fallback still writes
 For the real phone path, verify MATLAB Mobile uses the same MathWorks account and
 Sensors -> More -> Sensor Access / Stream to MATLAB is enabled.
 
-Do not use this as the only demo path. Keep the file-based path above working.
+Use this as a live bonus path. The primary judged path remains the file-based
+session replay above, because it is deterministic and presentation-ready.
 
 ---
 
