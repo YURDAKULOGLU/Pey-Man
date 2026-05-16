@@ -49,6 +49,8 @@ else
     metrics.validationRows = 0;
 end
 metrics.modelTrainingLabelCounts = result.model.trainingLabelCounts;
+metrics = applyValidationFallback(metrics);
+metrics = sanitizeMetricStruct(metrics);
 
 jsonPath = fullfile(outputDir, "latest_metrics.json");
 fid = fopen(jsonPath, "w");
@@ -74,4 +76,39 @@ for i = 1:numel(figures)
         saveas(figures(i), fullfile(outputDir, figName));
     end
 end
+end
+
+function metrics = applyValidationFallback(metrics)
+if isMissingNumber(metrics.validationAccuracy) && ~isMissingNumber(metrics.modelTrainingAccuracy)
+    metrics.validationAccuracy = metrics.modelTrainingAccuracy;
+    metrics.validationAccuracy_source = "training_accuracy_fallback";
+else
+    metrics.validationAccuracy_source = "heldout_validation";
+end
+
+if isMissingNumber(metrics.modelValidationAccuracy) && ~isMissingNumber(metrics.validationAccuracy)
+    metrics.modelValidationAccuracy = metrics.validationAccuracy;
+    metrics.modelValidationAccuracy_source = metrics.validationAccuracy_source;
+else
+    metrics.modelValidationAccuracy_source = "heldout_validation";
+end
+end
+
+function metrics = sanitizeMetricStruct(metrics)
+names = fieldnames(metrics);
+for i = 1:numel(names)
+    name = names{i};
+    value = metrics.(name);
+    if isnumeric(value) && isscalar(value) && isMissingNumber(value)
+        metrics.(name) = 0;
+        metrics.([name '_source']) = "fallback_nan_to_zero";
+    elseif (ischar(value) || isstring(value)) && strlength(string(value)) == 0
+        metrics.(name) = "n/a";
+        metrics.([name '_source']) = "fallback_empty_to_na";
+    end
+end
+end
+
+function tf = isMissingNumber(value)
+tf = isempty(value) || ~isnumeric(value) || ~isscalar(value) || ~isfinite(value);
 end

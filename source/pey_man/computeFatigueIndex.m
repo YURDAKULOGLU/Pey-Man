@@ -14,6 +14,7 @@ excessLoad = clampValue((loadRatio - 1.0) / 1.5, 0, 1);
 fatigueByWindow = 100 * (0.40 * excessLoad + 0.25 * consistencyDrop + ...
     0.20 * cadenceDrop + 0.15 * lateWeight .* excessLoad);
 fatigueByWindow = clampValue(movmean(fatigueByWindow, 5, "omitnan"), 0, 100);
+fatigueByWindow(~isfinite(fatigueByWindow)) = 0;
 
 lastThird = features.tStartSec >= quantile(features.tStartSec, 0.66);
 if any(lastThird)
@@ -22,9 +23,19 @@ else
     fatigueIndex = mean(fatigueByWindow, "omitnan");
 end
 fatigueIndex = round(clampValue(fatigueIndex, 0, 100), 1);
+if ~isfinite(fatigueIndex)
+    fatigueIndex = 0;
+end
 
 [peakValue, peakIdx] = max(fatigueByWindow);
+if isempty(peakValue) || ~isfinite(peakValue)
+    peakValue = 0;
+    peakIdx = 1;
+end
 peakMinute = features.tStartSec(peakIdx) / 60;
+if ~isfinite(peakMinute)
+    peakMinute = 0;
+end
 
 timeline = table(features.tStartSec / 60, fatigueByWindow, features.activityLabel, ...
     'VariableNames', ["minute", "FatigueIndex", "activityLabel"]);

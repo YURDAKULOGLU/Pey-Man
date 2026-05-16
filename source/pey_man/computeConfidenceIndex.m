@@ -10,8 +10,17 @@ else
     sampleRegularity = clampValue(1 - std(dt, "omitnan") / max(mean(dt, "omitnan"), eps), 0, 1);
 end
 
-durationScore = clampValue((max(t) - min(t)) / 180, 0, 1);
-classifierScore = clampValue(mean(features.modelConfidence, "omitnan"), 0, 1);
+if isempty(t) || ~all(isfinite([min(t), max(t)]))
+    durationScore = 0;
+else
+    durationScore = clampValue((max(t) - min(t)) / 180, 0, 1);
+end
+
+classifierScore = mean(features.modelConfidence, "omitnan");
+if ~isfinite(classifierScore)
+    classifierScore = 0.5;
+end
+classifierScore = clampValue(classifierScore, 0, 1);
 gpsScore = 0.75 + 0.25 * double(session.meta.hasGPS);
 
 confidence = round(100 * (0.35 * sampleRegularity + 0.25 * durationScore + ...

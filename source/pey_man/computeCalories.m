@@ -60,7 +60,7 @@ totalMinutes = sum(caloriesByActivity.minutes, "omitnan");
 
 if activeMinutes <= 0
     dominantActivity = "sit";
-    detectedSport = "Rest / Recovery";
+    detectedSport = "static-session";
     dominantMinutes = sum(caloriesByActivity.minutes(caloriesByActivity.activity == "sit"), "omitnan");
     dominantCalories = sum(caloriesByActivity.calories(caloriesByActivity.activity == "sit"), "omitnan");
 else

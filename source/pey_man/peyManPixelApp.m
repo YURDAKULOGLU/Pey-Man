@@ -226,7 +226,7 @@ drawAll();
             validationLabel.Text = sprintf("VAL %.0f%%", validationAcc * 100);
         end
 
-        if ~state.bundle.hasMetrics
+        if ~state.bundle.hasMetrics || ~metricAvailable("workoutQualityScore")
             statusLabel.Text = "NO DATA";
             statusLabel.FontColor = colors.red;
         elseif fatigue >= 70
@@ -240,14 +240,14 @@ drawAll();
             statusLabel.FontColor = colors.yellow;
         end
 
-        metricLabels.quality.Text = sprintf("%.1f / 100", quality);
-        metricLabels.fatigue.Text = sprintf("%.1f / 100", fatigue);
-        metricLabels.confidence.Text = sprintf("%.1f %%", confidence);
-        metricLabels.sport.Text = char(metricText("detectedSport", "N/A"));
-        metricLabels.steps.Text = sprintf("%d", round(metricNumber("stepCount", 0)));
-        metricLabels.distance.Text = sprintf("%.2f km", metricNumber("distanceKm", 0));
-        metricLabels.cadence.Text = sprintf("%.1f spm", metricNumber("cadenceSpm", 0));
-        metricLabels.calories.Text = sprintf("%.1f kcal", metricNumber("estimatedCalories", 0));
+        metricLabels.quality.Text = char(metricDisplayNumber("workoutQualityScore", "%.1f / 100"));
+        metricLabels.fatigue.Text = char(metricDisplayNumber("fatigueIndex", "%.1f / 100"));
+        metricLabels.confidence.Text = char(metricDisplayNumber("confidenceIndex", "%.1f %%"));
+        metricLabels.sport.Text = char(metricDisplayText("detectedSport"));
+        metricLabels.steps.Text = char(metricDisplayNumber("stepCount", "%.0f"));
+        metricLabels.distance.Text = char(metricDisplayNumber("distanceKm", "%.2f km"));
+        metricLabels.cadence.Text = char(metricDisplayNumber("cadenceSpm", "%.1f spm"));
+        metricLabels.calories.Text = char(metricDisplayNumber("estimatedCalories", "%.1f kcal"));
 
         logLabel.Text = composeNarrative();
         drawGame();
@@ -256,7 +256,7 @@ drawAll();
     end
 
     function textValue = composeNarrative()
-        if ~state.bundle.hasMetrics
+        if ~state.bundle.hasMetrics || ~metricAvailable("workoutQualityScore")
             textValue = sprintf("%s\n\nRun main, runSyntheticFatigueDemo, or load a session output folder.", ...
                 char(state.bundle.statusMessage));
             return;
@@ -516,7 +516,7 @@ drawAll();
 
     function value = metricNumber(name, defaultValue)
         value = defaultValue;
-        if state.bundle.hasMetrics && isfield(state.bundle.metrics, name)
+        if metricAvailable(name)
             raw = state.bundle.metrics.(name);
             if isnumeric(raw)
                 value = double(raw);
@@ -531,13 +531,44 @@ drawAll();
 
     function value = metricText(name, defaultValue)
         value = string(defaultValue);
-        if state.bundle.hasMetrics && isfield(state.bundle.metrics, name)
+        if metricAvailable(name)
             raw = state.bundle.metrics.(name);
             if ischar(raw) || isstring(raw)
                 value = string(raw);
             elseif isnumeric(raw)
                 value = string(raw);
             end
+        end
+    end
+
+    function textValue = metricDisplayNumber(name, formatSpec)
+        if metricAvailable(name)
+            textValue = string(sprintf(formatSpec, metricNumber(name, 0)));
+        else
+            textValue = "n/a";
+        end
+    end
+
+    function textValue = metricDisplayText(name)
+        if metricAvailable(name)
+            textValue = metricText(name, "n/a");
+        else
+            textValue = "n/a";
+        end
+    end
+
+    function tf = metricAvailable(name)
+        tf = false;
+        if ~state.bundle.hasMetrics || ~isfield(state.bundle.metrics, name)
+            return;
+        end
+        raw = state.bundle.metrics.(name);
+        if isnumeric(raw)
+            tf = ~isempty(raw) && all(isfinite(raw(:)));
+        elseif ischar(raw) || isstring(raw)
+            tf = strlength(string(raw)) > 0 && string(raw) ~= "n/a";
+        else
+            tf = ~isempty(raw);
         end
     end
 
