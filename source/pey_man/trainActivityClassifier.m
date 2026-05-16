@@ -46,18 +46,61 @@ end
 X = featurePredictorTable(training, predictorNames);
 y = training.Label;
 
-if exist("fitctree", "file") == 2
+if exist("fitcensemble", "file") == 2 && exist("cvpartition", "file") == 2
+    model = struct();
+    model.type = "fitcensemble-bag";
+    model.predictorNames = predictorNames;
+
+    [trainedModel, valAcc, valRows] = trainBaggedEnsemble(X, y);
+    model.trainedModel = trainedModel;
+    predicted = predict(trainedModel, X);
+    model.trainingAccuracy = mean(predicted == y);
+    model.validationAccuracy = valAcc;
+    model.validationRows = valRows;
+    model.trainingRows = height(training);
+    model.trainingLabelCounts = labelCounts(training.Label);
+    model.reason = "trained from ActivityLogs.mat with bagged trees ensemble";
+
+    if ~isnan(valAcc)
+        fprintf("Validation accuracy: %.1f%% (held-out %d rows)\n", 100 * valAcc, valRows);
+    end
+elseif exist("fitctree", "file") == 2
     model = struct();
     model.type = "fitctree";
     model.predictorNames = predictorNames;
     model.trainedModel = fitctree(X, y, "MinLeafSize", 2);
     predicted = predict(model.trainedModel, X);
     model.trainingAccuracy = mean(predicted == y);
+    model.validationAccuracy = NaN;
+    model.validationRows = 0;
     model.trainingRows = height(training);
     model.trainingLabelCounts = labelCounts(training.Label);
     model.reason = "trained from ActivityLogs.mat";
 else
     model = centroidModel(X, y, predictorNames);
+end
+end
+
+function [trainedModel, valAcc, valRows] = trainBaggedEnsemble(X, y)
+nRows = height(X);
+nClasses = numel(categories(y));
+canHoldout = nRows >= max(10, 5 * nClasses);
+
+if canHoldout
+    rng(20260516, "twister");
+    cvp = cvpartition(y, "Holdout", 0.2);
+    Xtrain = X(training(cvp), :);
+    ytrain = y(training(cvp));
+    Xval = X(test(cvp), :);
+    yval = y(test(cvp));
+    trainedModel = fitcensemble(Xtrain, ytrain, "Method", "Bag", "NumLearningCycles", 60);
+    valPredicted = predict(trainedModel, Xval);
+    valAcc = mean(valPredicted == yval);
+    valRows = numel(yval);
+else
+    trainedModel = fitcensemble(X, y, "Method", "Bag", "NumLearningCycles", 60);
+    valAcc = NaN;
+    valRows = 0;
 end
 end
 
@@ -68,6 +111,8 @@ model.predictorNames = predictorNames;
 model.trainedModel = [];
 model.trainingRows = 0;
 model.trainingAccuracy = NaN;
+model.validationAccuracy = NaN;
+model.validationRows = 0;
 model.trainingLabelCounts = struct();
 model.reason = reason;
 end
@@ -97,6 +142,8 @@ model.mu = mu;
 model.sigma = sigma;
 model.trainingRows = numel(y);
 model.trainingAccuracy = mean(categorical(predicted) == y);
+model.validationAccuracy = NaN;
+model.validationRows = 0;
 model.trainingLabelCounts = labelCounts(y);
 model.reason = "trained from ActivityLogs.mat with toolbox-free nearest-centroid classifier";
 end

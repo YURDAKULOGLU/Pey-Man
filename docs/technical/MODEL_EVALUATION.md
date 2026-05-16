@@ -4,9 +4,11 @@ This project uses AgentLaboratory as inspiration for experiment discipline only.
 
 ## Current Model Shape
 
-- ML component: supervised `sit / walk / run` classifier trained from `ActivityLogs.mat`.
+- ML component: supervised `sit / walk / run` classifier trained from `ActivityLogs.mat` using **bagged trees ensemble** (`fitcensemble`, `Method=Bag`, `NumLearningCycles=60`) with a **20% holdout validation split**.
 - Deterministic component: fatigue, quality, steps, calories, cadence, and confidence formulas.
-- Fallback: toolbox-free nearest-centroid classifier when `fitctree` is unavailable; rule classifier only when training data is unavailable.
+- Fallback ladder when Statistics & ML Toolbox is unavailable: `fitctree` → toolbox-free nearest-centroid classifier → rule-only classifier (last resort, training data missing).
+
+Validation accuracy is printed at runtime by `trainActivityClassifier.m` and persisted to `outputs/<session>/latest_metrics.json` under `modelValidationAccuracy` / `modelValidationRows`.
 
 ## Why Hybrid
 
@@ -57,5 +59,5 @@ Generated figures must pass these checks:
 | Readability | one-purpose `.m` files |
 | Visualization | raw sensor overview, fatigue timeline, dashboard, pixel UI |
 | Model making | sensor data -> windows -> labels -> scores |
-| Advanced ML | `fitctree` or toolbox-free nearest-centroid classifier + diagnostics |
+| Advanced ML | `fitcensemble` bagged trees (60 learners) + 20% holdout validation accuracy printed at runtime; degrades to `fitctree` then centroid when toolbox absent |
 | Presentation | 5-minute English demo script and report outline |
