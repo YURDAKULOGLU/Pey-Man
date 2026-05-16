@@ -8,6 +8,9 @@ addpath(thisDir);
 
 candidateFiles = [
     fullfile(projectRoot, "local_data", "fatigue_demo.mat")
+    fullfile(projectRoot, "local_data", "walk_session.mat")
+    fullfile(projectRoot, "local_data", "run_session.mat")
+    fullfile(projectRoot, "local_data", "sit_session.mat")
     fullfile(projectRoot, "local_data", "walk.mat")
     fullfile(projectRoot, "local_data", "run.mat")
     fullfile(projectRoot, "local_data", "sit.mat")
@@ -27,4 +30,3 @@ if strlength(selectedFile) == 0
 else
     runPeyManFile(selectedFile);
 end
-
