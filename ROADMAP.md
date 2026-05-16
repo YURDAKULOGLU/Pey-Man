@@ -76,4 +76,3 @@ DoD:
 - final demo video/slides/report are linked,
 - team can run the demo from the README,
 - submission link is ready before deadline.
-

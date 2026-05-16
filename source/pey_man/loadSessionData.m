@@ -85,26 +85,7 @@ pos = sortrows(pos);
 end
 
 function [acc, pos] = generateDemoSession()
-fs = 25;
-t = (0:1/fs:12*60)';
-amp = zeros(size(t));
-freq = zeros(size(t));
-
-amp(t < 60) = 0.05;            freq(t < 60) = 0.15;
-amp(t >= 60 & t < 300) = 0.55; freq(t >= 60 & t < 300) = 1.65;
-amp(t >= 300 & t < 480) = 1.05; freq(t >= 300 & t < 480) = 2.55;
-amp(t >= 480) = 0.82;          freq(t >= 480) = 2.10;
-
-noise = 0.05 * randn(size(t));
-x = amp .* sin(2*pi.*freq.*t) + noise;
-y = 0.45 * amp .* cos(2*pi.*freq.*t + 0.4) + noise;
-z = 9.81 + 0.25 * amp .* sin(2*pi.*freq.*t + 1.2) + noise;
-acc = timetable(seconds(t), x, y, z, 'VariableNames', ["X", "Y", "Z"]);
-
-lat = 41 + cumsum(0.00000025 + 0.00000005 * randn(size(t)));
-lon = 29 + cumsum(0.00000030 + 0.00000005 * randn(size(t)));
-speed = max(0, amp .* freq);
-pos = timetable(seconds(t), lat, lon, speed, 'VariableNames', ["latitude", "longitude", "speed"]);
+[acc, pos] = generateSyntheticFatigueSession();
 end
 
 function value = getOption(options, name, defaultValue)

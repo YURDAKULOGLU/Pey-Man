@@ -23,6 +23,12 @@
 - [x] Fatigue hero plot renders.
 - [x] Dashboard renders.
 
+## V2 Data Robustness
+
+- [x] Synthetic fatigue fallback exists.
+- [ ] Team data intake note reviewed by team.
+- [ ] One team-recorded session runs through the pipeline.
+
 ## Verification
 
 - [ ] Clean MATLAB Online run.

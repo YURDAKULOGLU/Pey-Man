@@ -17,6 +17,14 @@ Show that Pey-Man turns phone sensor data into a clear workout quality story.
 9. Read the English session summary.
 10. Mention GPS only as an optional enrichment if it is stable.
 
+Backup path:
+
+```matlab
+source/pey_man/runSyntheticFatigueDemo
+```
+
+Use this if team phone data or MATLAB Mobile sync is delayed.
+
 ## Demo Narrative
 
 Pey-Man is not just counting steps. It looks at how movement changes during a workout and turns that into a fatigue and workout quality summary.

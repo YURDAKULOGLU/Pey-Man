@@ -59,3 +59,27 @@ matlab -batch "cd('C:/Projeler/Pey-Man/source/pey_man'); opts=struct(); opts.dem
 ```
 
 Result: `RULE_FALLBACK_OK`.
+
+## 2026-05-16 V2 Synthetic Fallback Attempt
+
+Added:
+
+- `source/pey_man/generateSyntheticFatigueSession.m`
+- `source/pey_man/runSyntheticFatigueDemo.m`
+- `TEAM_DATA_INTAKE.md`
+
+Repository hygiene:
+
+```powershell
+python tools/check_repo_hygiene.py
+```
+
+Result: `HYGIENE_OK`.
+
+MATLAB rerun status: blocked by local MATLAB startup, not by a captured Pey-Man error. Even this minimal command timed out without writing a log:
+
+```powershell
+matlab -batch "disp('STARTUP_TEST')"
+```
+
+Follow-up required: rerun `main` and `runSyntheticFatigueDemo` after MATLAB batch startup recovers.
