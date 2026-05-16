@@ -2,7 +2,7 @@
 
 ## Baseline
 
-The baseline is deterministic. It does not need Classification Learner, Deep Learning Toolbox, or trained model artifacts.
+The baseline is MATLAB Online-safe and explainable. The activity breakdown uses a small supervised classifier when available; the Fatigue Index and Workout Quality Score remain transparent formulas.
 
 ## Processing Steps
 
@@ -15,7 +15,7 @@ accMag = sqrt(X.^2 + Y.^2 + Z.^2);
 ```
 
 4. Estimate dynamic acceleration by subtracting a moving baseline.
-5. Split the session into 2-4 second sliding windows with 50% overlap.
+5. Split the session into 4 second sliding windows with 75% overlap.
 6. Compute window features:
    - mean dynamic acceleration
    - standard deviation
@@ -24,10 +24,21 @@ accMag = sqrt(X.^2 + Y.^2 + Z.^2);
    - active ratio
    - optional GPS speed
    - intensity score
-7. Assign a rule-based activity label per window.
+7. Train or load a sit/walk/run classifier and assign one label per window.
 8. Compute Fatigue Index.
 9. Compute Workout Quality Score.
-10. Plot and summarize results.
+10. Compute confidence, cadence, steps, distance, and calories.
+11. Plot and summarize results.
+
+## ML Activity Classifier
+
+The ML feature is intentionally narrow:
+
+```text
+ActivityLogs.mat -> labeled windows -> feature table -> fitctree -> sit/walk/run labels
+```
+
+If `fitctree` is unavailable, `classifyActivity.m` uses an explicit rule fallback. This keeps the demo runnable while still allowing a real classifier on MATLAB installations with Statistics and Machine Learning Toolbox.
 
 ## Fatigue Index
 
@@ -55,11 +66,17 @@ WorkoutQualityScore = clamp(100 * quality, 0, 100)
 
 The exact weights can be tuned, but they must remain visible as named constants in code and documented.
 
-## Deferred ML Lane
+## Confidence Index
 
-An ML classifier can be added later only if:
+Sensor claims should not sound absolute. Confidence is estimated from:
 
-- deterministic baseline is green,
-- training data is sufficient,
-- verification remains reproducible,
-- baseline demo path remains unchanged.
+- sample regularity,
+- session duration,
+- classifier confidence,
+- GPS availability.
+
+Example presentation line:
+
+```text
+Movement confidence is 90% based on sensor regularity, classifier margin, and GPS availability.
+```

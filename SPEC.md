@@ -2,7 +2,7 @@
 
 ## Concept
 
-Pey-Man is a MATLAB Mobile fitness tracker that turns phone sensor data into a workout quality summary. The first version computes a Fatigue Index and Workout Quality Score from acceleration data, with optional GPS distance support and a deterministic demo mode.
+Pey-Man is a MATLAB Mobile fitness tracker that turns phone sensor data into a workout quality summary. The first version computes a Fatigue Index and Workout Quality Score from acceleration data, uses a bounded ML classifier for sit/walk/run activity breakdown, and keeps a deterministic fallback demo mode.
 
 ## Current Surface
 
@@ -18,7 +18,7 @@ The starter package has useful examples but no committed project-specific model 
 
 ## Next Move
 
-Implement a deterministic baseline under `source/pey_man/` before adding any advanced ML, App Designer, or real-time streaming feature.
+Implement a MATLAB Online-safe P0 pipeline under `source/pey_man/`: load data, extract windows, train/apply an activity classifier, compute the Fatigue Index, render the hero timeline, and print an English session summary.
 
 ## Rubric Map
 
@@ -28,9 +28,9 @@ Implement a deterministic baseline under `source/pey_man/` before adding any adv
 | MATLAB mastery | Timetable handling, windowing, feature extraction, plotting |
 | Functionality | Demo mode runs from clean checkout |
 | Readability | Small named MATLAB helper files |
-| Data visualization | Acceleration plot and workout summary plot |
-| Model making | Raw sensor data to window features to score |
-| Advanced model making | Deferred optional lane after baseline verification |
+| Data visualization | Annotated Fatigue Index timeline plus dashboard |
+| Model making | Raw sensor data to window features to activity labels and score |
+| Advanced model making | Bounded sit/walk/run classifier with rule fallback |
 | Presentation quality | Short demo runbook and judge-readable story |
 
 ## Data Contract
@@ -76,6 +76,10 @@ Final output:
 
 - `FatigueIndex` in `[0, 100]`
 - `WorkoutQualityScore` in `[0, 100]`
+- `ConfidenceIndex` in `[0, 100]`
+- `StepCount`
+- `CadenceSpm`
+- `EstimatedCalories`
 - `activeMinutes`
 - `distanceKm` or `NaN`
 - `activityMix`
@@ -86,23 +90,35 @@ Final output:
 1. Load acceleration and optional position data.
 2. Compute acceleration magnitude.
 3. Remove gravity or baseline drift with moving mean or moving median.
-4. Segment into 2-4 second sliding windows with 50% overlap.
+4. Segment into 4 second sliding windows with 75% overlap.
 5. Extract per-window features.
-6. Classify windows with deterministic thresholds.
+6. Classify windows as sit/walk/run with `fitctree` when available, with deterministic fallback.
 7. Compute fatigue from sustained load and late-session dropoff.
 8. Compute workout quality from duration, intensity, consistency, and fatigue penalty.
-9. Render plots and a judge-readable summary.
+9. Compute step count, distance fallback, calories, cadence, and confidence.
+10. Render hero plot, dashboard, and a judge-readable English summary.
 
 ## Files To Create
 
-- `source/pey_man/PeyManDemo.mlx`
+- `source/pey_man/main.m`
 - `source/pey_man/runPeyManPipeline.m`
 - `source/pey_man/loadSessionData.m`
-- `source/pey_man/buildWindowFeatures.m`
-- `source/pey_man/classifyActivityRuleBased.m`
+- `source/pey_man/preprocessSignal.m`
+- `source/pey_man/windowizeSignal.m`
+- `source/pey_man/extractFeatures.m`
+- `source/pey_man/trainActivityClassifier.m`
+- `source/pey_man/classifyActivity.m`
+- `source/pey_man/computeBaseline.m`
 - `source/pey_man/computeFatigueIndex.m`
-- `source/pey_man/computeWorkoutQualityScore.m`
-- `source/pey_man/plotWorkoutSummary.m`
+- `source/pey_man/computeCadence.m`
+- `source/pey_man/computeStepsDistance.m`
+- `source/pey_man/computeCalories.m`
+- `source/pey_man/computeQualityScore.m`
+- `source/pey_man/computeConfidenceIndex.m`
+- `source/pey_man/generateSessionSummary.m`
+- `source/pey_man/plotFatigueTimeline.m`
+- `source/pey_man/createDashboard.m`
+- `source/pey_man/plotActivityPie.m`
 - `source/pey_man/haversineDistance.m`
 
 ## Verification Gates
@@ -111,10 +127,11 @@ Final output:
 - `demoMode=true` runs with bundled data.
 - Missing GPS does not crash the workflow.
 - Scores stay within `[0, 100]`.
-- At least one acceleration plot and one summary plot render with labels.
+- Fatigue Index timeline renders with annotation and color bands.
+- Dashboard renders quality, fatigue, confidence, activity mix, steps, distance, cadence, and calories.
 - Malformed required input fails loudly.
-- Baseline does not require Classification Learner or Deep Learning Toolbox.
-- Future ML lane can be removed without breaking baseline.
+- Baseline does not require Deep Learning Toolbox.
+- ML activity classifier can fall back without breaking the demo.
 - `demoMode` is discoverable without code edits.
 
 ## Skill Pattern Gates

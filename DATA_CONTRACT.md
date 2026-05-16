@@ -52,8 +52,13 @@ Each analysis window should include:
 ```matlab
 summary.FatigueIndex
 summary.WorkoutQualityScore
+summary.ConfidenceIndex
+summary.StepCount
+summary.CadenceSpm
+summary.EstimatedCalories
 summary.activeMinutes
 summary.distanceKm
+summary.distanceSource
 summary.activityMix
 summary.recommendation
 ```

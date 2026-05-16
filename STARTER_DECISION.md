@@ -4,16 +4,17 @@
 
 Build a MATLAB Online-safe Workout Quality Tracker.
 
-The baseline will be deterministic and explainable:
+The baseline will be explainable and demo-safe:
 
 - Required input: phone acceleration data.
 - Optional input: GPS position data.
 - Main output: Fatigue Index, 0 to 100.
 - Main output: Workout Quality Score, 0 to 100.
-- Supporting output: rule-based activity or intensity windows.
+- Supporting output: ML sit/walk/run activity windows with deterministic fallback.
+- Supporting output: confidence index, step count, distance, cadence, estimated calories.
 - Demo path: `demoMode=true` using bundled sample data.
 
-Machine learning is optional and deferred until the deterministic baseline is green.
+Machine learning is used only where it is easy to validate: sit/walk/run activity classification. Fatigue remains an explainable score.
 
 ## Why This Starter
 
@@ -27,25 +28,32 @@ This direction is safer than an LSTM-first approach because this repository does
 - a clean export and reload path,
 - enough data to avoid overfitting.
 
-The first win must be reliable, explainable, and demo-ready.
+The first win must be reliable, explainable, and demo-ready. A small activity classifier is acceptable because the starter includes labeled sit/walk/run logs.
 
 ## Canonical Scope
 
 Create a deterministic baseline under `source/pey_man/`:
 
-- `PeyManDemo.mlx`
+- `main.m`
 - `loadSessionData.m`
-- `buildWindowFeatures.m`
-- `classifyActivityRuleBased.m`
+- `preprocessSignal.m`
+- `windowizeSignal.m`
+- `extractFeatures.m`
+- `trainActivityClassifier.m`
+- `classifyActivity.m`
+- `computeBaseline.m`
 - `computeFatigueIndex.m`
-- `computeWorkoutQualityScore.m`
-- `plotWorkoutSummary.m`
+- `computeQualityScore.m`
+- `computeConfidenceIndex.m`
+- `generateSessionSummary.m`
+- `plotFatigueTimeline.m`
+- `createDashboard.m`
 - `haversineDistance.m`
 
 ## Deferred Scope
 
 - LSTM or deep learning fatigue prediction.
-- Classification Learner dependency.
+- LSTM or deep-learning-first dependency.
 - App Designer UI.
 - Real-time streaming.
 - Exported app artifacts.
