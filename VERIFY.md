@@ -167,3 +167,9 @@ Visual review:
 - `outputs/example_file/figure_3.png`: raw acceleration and ML feature labels are visible.
 - `outputs/synthetic/figure_2.png`: fatigue rises during sustained effort and drops during rest.
 - `outputs/synthetic/figure_3.png`: rest segment is visible and low-motion guard prevents the rest segment from being fully over-called as run.
+
+Audit status:
+
+- Canonical Claude/Kimi audit attempted but timed out.
+- Current audit artifact: `docs/audits/2026-05-16-codex-change-audit-attempt.md`.
+- Status remains `CONCERNS` until Claude or Kimi review completes.
