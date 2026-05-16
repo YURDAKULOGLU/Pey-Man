@@ -41,6 +41,7 @@ Explainable component:
 - Activity Breakdown pie chart.
 - Quality, Fatigue, and Confidence scores.
 - Steps, distance, cadence, and estimated calories.
+- Detected sport/session type and calories by activity.
 - English session summary.
 
 ## 6. Product Hook
@@ -77,4 +78,3 @@ Pey-Man turns goals into a Pac-Man inspired loop:
 5. Product: show Pey-Man pixel UI.
 6. Limitation: estimates and GPS caveats.
 7. Close: personalized workout quality tracker built fully in MATLAB.
-

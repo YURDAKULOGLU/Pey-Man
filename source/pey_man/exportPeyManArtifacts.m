@@ -18,6 +18,12 @@ metrics.stepCount = result.summary.StepCount;
 metrics.distanceKm = result.summary.DistanceKm;
 metrics.distanceSource = result.summary.DistanceSource;
 metrics.estimatedCalories = result.summary.EstimatedCalories;
+metrics.detectedSport = result.summary.DetectedSport;
+metrics.dominantActivity = result.summary.DominantActivity;
+metrics.dominantActivityMinutes = result.summary.DominantActivityMinutes;
+metrics.dominantActivityCalories = result.summary.DominantActivityCalories;
+metrics.averageCaloriesPerMinute = result.summary.AverageCaloriesPerMinute;
+metrics.activeCaloriesPerMinute = result.summary.ActiveCaloriesPerMinute;
 metrics.cadenceSpm = result.summary.CadenceSpm;
 metrics.activeMinutes = result.summary.ActiveMinutes;
 metrics.peakFatigueMinute = result.summary.PeakFatigueMinute;
@@ -33,6 +39,7 @@ fprintf(fid, "%s", jsonencode(metrics, "PrettyPrint", true));
 clear cleanup;
 
 writetable(result.summary.ActivityMix, fullfile(outputDir, "activity_mix.csv"));
+writetable(result.summary.CaloriesByActivity, fullfile(outputDir, "calories_by_activity.csv"));
 writetable(result.features, fullfile(outputDir, "window_features.csv"));
 writetable(result.fatigueTimeline(:, ["minute", "FatigueIndex", "activityLabel"]), ...
     fullfile(outputDir, "fatigue_timeline.csv"));
@@ -47,4 +54,3 @@ for i = 1:numel(figures)
     end
 end
 end
-

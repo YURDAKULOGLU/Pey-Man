@@ -80,6 +80,9 @@ Final output:
 - `StepCount`
 - `CadenceSpm`
 - `EstimatedCalories`
+- `DetectedSport`
+- `CaloriesByActivity`
+- `ActiveCaloriesPerMinute`
 - `activeMinutes`
 - `distanceKm` or `NaN`
 - `activityMix`
@@ -95,7 +98,7 @@ Final output:
 6. Classify windows as sit/walk/run with `fitctree` when available, with deterministic fallback.
 7. Compute fatigue from sustained load and late-session dropoff.
 8. Compute workout quality from duration, intensity, consistency, and fatigue penalty.
-9. Compute step count, distance fallback, calories, cadence, and confidence.
+9. Compute step count, distance fallback, detected sport, calories by activity, cadence, and confidence.
 10. Render hero plot, dashboard, and a judge-readable English summary.
 
 ## Files To Create
