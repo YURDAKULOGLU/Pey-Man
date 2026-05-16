@@ -20,14 +20,14 @@ The competition instructions warn that MATLAB Mobile and MATLAB Online may not s
 
 ## Recording Plan
 
-Record these sessions:
+Record these sessions for issue #10:
 
 | File | Duration | Activity |
 | --- | --- | --- |
-| `sit.mat` | 2-5 min | seated/still baseline |
-| `walk.mat` | 2-5 min | steady walking |
-| `run.mat` | 2-5 min | safe jogging/running |
-| `fatigue_demo.mat` | 8-12 min | fresh movement -> short rest -> tired movement |
+| `sit_session.mat` | at least 60 sec | phone in pocket, seated/still baseline |
+| `walk_session.mat` | at least 60 sec | natural walking, phone in pocket |
+| `run_session.mat` | at least 60 sec | safe light jog/run, phone strapped or pocketed firmly |
+| `fatigue_demo.mat` | about 3 min | sit -> walk -> run -> sit demo transitions |
 
 ## Local File Placement
 
@@ -55,6 +55,8 @@ runPeyManFile("../../local_data/fatigue_demo.mat")
 ```
 
 If no local data is present, `runLocalDataSession` falls back to `runSyntheticFatigueDemo`.
+The runner checks the issue #10 filenames first, then the older `walk.mat`,
+`run.mat`, and `sit.mat` names for compatibility.
 
 ## Evidence To Capture
 
@@ -70,4 +72,3 @@ For each IRL run, record:
 - any error or strange plot.
 
 Use aggregate metrics and screenshots in the repo. Commit raw GPS/person data only if the team explicitly approves.
-
