@@ -78,7 +78,7 @@ Expected:
 
 - two figures appear,
 - terminal prints session summary,
-- `FatigueIndex`, `WorkoutQualityScore`, `ConfidenceIndex`, `StepCount`, `DistanceKm`, `CadenceSpm`, and `EstimatedCalories` are present,
+- `FatigueIndex`, `WorkoutQualityScore`, `ConfidenceIndex`, `StepCount`, `DistanceKm`, `CadenceSpm`, `EstimatedCalories`, `DetectedSport`, and `ActiveCaloriesPerMinute` are present,
 - no error.
 
 ## Synthetic Fallback Test
@@ -93,6 +93,7 @@ Expected:
 
 - synthetic fresh -> rest -> tired session runs,
 - same dashboard path works,
+- `outputs/synthetic/calories_by_activity.csv` is written with per-activity calorie estimates,
 - no private phone data is needed.
 
 ## IRL Local Data Test

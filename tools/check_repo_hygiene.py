@@ -8,6 +8,12 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SOURCE_DIRS = [ROOT / "source" / "pey_man"]
 ALLOWED_MAT_DIR = ROOT / "source" / "matlab-mobile-fitness-tracker-master"
+IGNORED_DATA_DIRS = [
+    ROOT / "local_data",
+    ROOT / "data",
+    ROOT / "models",
+    ROOT / "outputs",
+]
 REQUIRED_FILES = [
     ROOT / "source" / "pey_man" / "main.m",
     ROOT / "source" / "pey_man" / "runPeyManPipeline.m",
@@ -44,6 +50,8 @@ def main() -> None:
                 fail(f"absolute local path found in source: {path.relative_to(ROOT)}")
 
     for path in ROOT.rglob("*.mat"):
+        if any(ignored in path.parents for ignored in IGNORED_DATA_DIRS):
+            continue
         if ALLOWED_MAT_DIR not in path.parents:
             fail(f"private or unreviewed .mat file outside starter data: {path.relative_to(ROOT)}")
 

@@ -142,6 +142,7 @@ Fix:
 - added model diagnostics to exported JSON,
 - added toolbox-free nearest-centroid ML fallback so training still happens without `fitctree`,
 - added optional MATLAB `webwrite` coaching path with deterministic fallback.
+- added detected sport and calories-by-activity export without reverting non-overlap duration accounting.
 
 Commands:
 
@@ -167,6 +168,12 @@ Visual review:
 - `outputs/example_file/figure_3.png`: raw acceleration and ML feature labels are visible.
 - `outputs/synthetic/figure_2.png`: fatigue rises during sustained effort and drops during rest.
 - `outputs/synthetic/figure_3.png`: rest segment is visible and low-motion guard prevents the rest segment from being fully over-called as run.
+
+Sport/calorie export:
+
+- `outputs/example_file/calories_by_activity.csv` is generated.
+- `outputs/synthetic/calories_by_activity.csv` is generated.
+- `latest_metrics.json` includes `detectedSport`, `dominantActivity`, `averageCaloriesPerMinute`, and `activeCaloriesPerMinute`.
 
 Audit status:
 

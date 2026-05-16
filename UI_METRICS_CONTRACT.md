@@ -9,6 +9,7 @@ Running a real or local session writes:
 ```text
 outputs/<session-name>/latest_metrics.json
 outputs/<session-name>/activity_mix.csv
+outputs/<session-name>/calories_by_activity.csv
 outputs/<session-name>/window_features.csv
 outputs/<session-name>/fatigue_timeline.csv
 outputs/<session-name>/figure_*.png
@@ -22,14 +23,20 @@ outputs/<session-name>/figure_*.png
 {
   "summaryText": "Solid session...",
   "fatigueIndex": 17.2,
-  "workoutQualityScore": 76.2,
-  "confidenceIndex": 91.2,
-  "stepCount": 2478,
+  "workoutQualityScore": 58.9,
+  "confidenceIndex": 91.4,
+  "stepCount": 624,
   "distanceKm": 0.658,
   "distanceSource": "gps",
-  "estimatedCalories": 236.6,
+  "estimatedCalories": 26.0,
+  "detectedSport": "Walking Session",
+  "dominantActivity": "walk",
+  "dominantActivityMinutes": 6.1,
+  "dominantActivityCalories": 25.9,
+  "averageCaloriesPerMinute": 4.3,
+  "activeCaloriesPerMinute": 4.3,
   "cadenceSpm": 104.8,
-  "activeMinutes": 6.0,
+  "activeMinutes": 6.1,
   "peakFatigueMinute": 5.9,
   "peakFatigueLabel": "Peak Fatigue Signal at 5:56",
   "coachAdvice": "Strong session...",
@@ -48,9 +55,10 @@ The UI should show, in this order:
 2. Fatigue Index.
 3. Confidence Index.
 4. Activity breakdown.
-5. Steps, distance, cadence, calories.
-6. Pac-Man goal pellets and streak polish.
-7. Optional coach advice.
+5. Detected sport and calories by activity.
+6. Steps, distance, cadence, calories.
+7. Pac-Man goal pellets and streak polish.
+8. Optional coach advice.
 
 ## Pac-Man UI Standard
 
