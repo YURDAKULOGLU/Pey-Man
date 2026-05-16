@@ -38,6 +38,16 @@ runPeyManPixelApp
 
 The UI uses a Pac-Man inspired fitness loop: Pey-Man moves toward the goal pellets as daily fitness targets are completed, while the ghost moves closer when targets are missed.
 
+## MATLAB Online Test
+
+Open the model entrypoint in MATLAB Online:
+
+```text
+https://matlab.mathworks.com/open/github/v1?repo=YURDAKULOGLU/Pey-Man&file=source/pey_man/main.m
+```
+
+The repository is private, so collaborators must have GitHub access. Full test instructions are in `TEST_PLAN.md`.
+
 ## Judging Summary
 
 Model work is worth 70 points:
