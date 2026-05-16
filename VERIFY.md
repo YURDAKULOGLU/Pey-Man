@@ -82,4 +82,46 @@ MATLAB rerun status: blocked by local MATLAB startup, not by a captured Pey-Man 
 matlab -batch "disp('STARTUP_TEST')"
 ```
 
-Follow-up required: rerun `main` and `runSyntheticFatigueDemo` after MATLAB batch startup recovers.
+Follow-up status: MATLAB batch startup recovered and the V2 smoke tests below passed.
+
+## 2026-05-16 V2 IRL Readiness Smoke
+
+Synthetic fallback with artifact export:
+
+```powershell
+matlab -batch "cd('C:/Projeler/Pey-Man/source/pey_man'); runSyntheticFatigueDemo; assert(isfile(fullfile('C:/Projeler/Pey-Man','outputs','synthetic','latest_metrics.json'))); assert(isfile(fullfile('C:/Projeler/Pey-Man','outputs','synthetic','fatigue_timeline.csv'))); disp('SYNTHETIC_EXPORT_OK')"
+```
+
+Result: `SYNTHETIC_EXPORT_OK`.
+
+Observed synthetic output:
+
+```text
+WorkoutQualityScore: 69.3 / 100
+FatigueIndex: 49.3 / 100
+ConfidenceIndex: 94.0%
+StepCount: 3364
+DistanceKm: 0.679
+DistanceSource: gps
+CadenceSpm: 75.0
+EstimatedCalories: 444.8
+PeakFatigueLabel: Fatigue Signal Elevated at 7:07
+```
+
+Local data fallback when `local_data/*.mat` is absent:
+
+```powershell
+matlab -batch "cd('C:/Projeler/Pey-Man/source/pey_man'); runLocalDataSession; assert(isfile(fullfile('C:/Projeler/Pey-Man','outputs','synthetic','latest_metrics.json'))); disp('LOCAL_DATA_FALLBACK_OK')"
+```
+
+Result: `LOCAL_DATA_FALLBACK_OK`.
+
+Specific `.mat` file runner using starter data as stand-in for a real phone file:
+
+```powershell
+matlab -batch "cd('C:/Projeler/Pey-Man/source/pey_man'); r=runPeyManFile('../matlab-mobile-fitness-tracker-master/ExampleData.mat', fullfile('C:/Projeler/Pey-Man','outputs','example_file')); assert(isfile(fullfile('C:/Projeler/Pey-Man','outputs','example_file','latest_metrics.json'))); assert(r.summary.WorkoutQualityScore>=0 && r.summary.WorkoutQualityScore<=100); disp('RUN_FILE_OK')"
+```
+
+Result: `RUN_FILE_OK`.
+
+Artifacts are written under ignored `outputs/`.

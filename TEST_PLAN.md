@@ -95,6 +95,26 @@ Expected:
 - same dashboard path works,
 - no private phone data is needed.
 
+## IRL Local Data Test
+
+After placing `.mat` files under ignored `local_data/`:
+
+```matlab
+runLocalDataSession
+```
+
+Or run a specific file:
+
+```matlab
+runPeyManFile("../../local_data/fatigue_demo.mat")
+```
+
+Expected:
+
+- the session runs through the same model pipeline,
+- output artifacts are written under `outputs/<session-name>/`,
+- no raw private `.mat` file is committed.
+
 ## Rule Fallback Test
 
 This verifies that the demo does not depend on ML toolbox availability:
@@ -162,4 +182,3 @@ Raw `.mat` files with personal/GPS data should stay local unless the team explic
 - [ ] `VERIFY.md` is updated with exact commands and outputs.
 - [ ] Demo script is under 5 minutes.
 - [ ] Submission link is public/shareable before Devpost submission.
-

@@ -35,3 +35,9 @@ If live data is delayed, run:
 source/pey_man/runSyntheticFatigueDemo
 ```
 
+For a real file, run:
+
+```matlab
+cd source/pey_man
+runPeyManFile("../../local_data/fatigue_demo.mat")
+```

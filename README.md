@@ -48,6 +48,17 @@ https://matlab.mathworks.com/open/github/v1?repo=YURDAKULOGLU/Pey-Man&file=sourc
 
 The repository is private, so collaborators must have GitHub access. Full test instructions are in `TEST_PLAN.md`.
 
+## IRL Data Test
+
+Put local MATLAB Mobile `.mat` files under ignored `local_data/`, then run:
+
+```matlab
+cd source/pey_man
+runLocalDataSession
+```
+
+Full real-world recording and privacy rules are in `IRL_TEST_RUNBOOK.md`.
+
 ## Judging Summary
 
 Model work is worth 70 points:

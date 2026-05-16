@@ -18,10 +18,12 @@ options.dataFile = "";
 options.activityLogFile = fullfile(projectRoot, "source", "matlab-mobile-fitness-tracker-master", "ActivityLogs.mat");
 
 result = runPeyManPipeline(options);
+exportPeyManArtifacts(result, fullfile(projectRoot, "outputs", "synthetic"));
 
 disp(" ");
 disp("=== Pey-Man Synthetic Fatigue Demo ===");
 disp(result.summaryText);
 disp(" ");
 disp(result.summary);
-
+disp(" ");
+disp("Artifacts written to: " + string(fullfile(projectRoot, "outputs", "synthetic")));

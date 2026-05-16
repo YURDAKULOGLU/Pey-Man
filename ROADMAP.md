@@ -2,7 +2,7 @@
 
 ## V1 - Working Model Foundation
 
-Status: implemented locally, pushed in commit `9ac4720`.
+Status: implemented and pushed.
 
 Goal: prove a clean MATLAB model path.
 
@@ -24,6 +24,8 @@ Required:
 - collect `sit.mat`, `walk.mat`, `run.mat`, and one `fatigue_demo.mat`,
 - keep private raw logs out of commits unless approved,
 - add a synthetic fatigue demo generator if live collection is delayed,
+- expose a real `.mat` file runner for IRL tests,
+- export UI/demo metrics to ignored `outputs/`,
 - calibrate confidence index against sample quality,
 - document final formulas and weights,
 - run repeatability and fallback checks.
@@ -32,6 +34,8 @@ DoD:
 
 - one team-recorded session runs through `main.m`,
 - synthetic fallback exists,
+- real `.mat` runner exists,
+- UI metrics export exists,
 - scores stay inside `[0, 100]`,
 - rule fallback and ML path both pass,
 - `VERIFY.md` includes team/synthetic evidence.

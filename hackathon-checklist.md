@@ -26,6 +26,11 @@
 ## V2 Data Robustness
 
 - [x] Synthetic fatigue fallback exists.
+- [x] IRL test runbook exists.
+- [x] UI metrics export contract exists.
+- [x] Synthetic artifact export verified.
+- [x] Local-data fallback verified.
+- [x] Specific `.mat` runner verified with starter data.
 - [ ] Team data intake note reviewed by team.
 - [ ] One team-recorded session runs through the pipeline.
 

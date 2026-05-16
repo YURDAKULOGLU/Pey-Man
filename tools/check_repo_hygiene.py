@@ -16,6 +16,11 @@ REQUIRED_FILES = [
     ROOT / "VERIFY.md",
     ROOT / "ROADMAP.md",
     ROOT / "QUALITY_STANDARD.md",
+    ROOT / "IRL_TEST_RUNBOOK.md",
+    ROOT / "UI_METRICS_CONTRACT.md",
+    ROOT / "source" / "pey_man" / "runPeyManFile.m",
+    ROOT / "source" / "pey_man" / "runLocalDataSession.m",
+    ROOT / "source" / "pey_man" / "exportPeyManArtifacts.m",
 ]
 
 
@@ -47,4 +52,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

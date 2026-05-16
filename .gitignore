@@ -10,6 +10,7 @@ outputs/
 tmp/
 scratch/
 runtime/
+local_data/
 
 # MATLAB generated artifacts
 *.asv
