@@ -30,4 +30,10 @@ Build a practical MATLAB Mobile fitness tracker from the starter package and pre
 
 ## Current Decision
 
-Start pragmatic: prove a working baseline first, then improve the model and presentation.
+Start pragmatic: keep the model baseline available, but add a memorable 100% MATLAB pixel UI early so the hackathon demo has a clear product story.
+
+## Pixel UI Phase
+
+- Launch with `runPeyManPixelApp`.
+- Keep the first version manual-input so the team can demo before sensor integration is complete.
+- Next step: connect the UI inputs to computed metrics from the MATLAB Mobile pipeline under `source/pey_man/`.

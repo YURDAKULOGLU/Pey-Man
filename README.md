@@ -23,8 +23,20 @@ Goal: use phone sensor data to produce useful fitness outputs such as steps, cal
 - `ExampleData.mat` - example phone sensor data.
 - `ActivityLogs.mat` - example activity log data.
 - `timeElapsed.m` - helper function for elapsed time arrays.
+- `runPeyManPixelApp.m` - launches the Pac-Man inspired pixel-art MATLAB UI.
+- `source/pey_man/peyManPixelApp.m` - 100% MATLAB UI implementation with generated pixel characters.
 - `Instructions.pdf` - setup and workflow guidance.
 - `GradingRubric.pdf` - judging criteria.
+
+## Pixel UI Demo
+
+From the repository root in MATLAB:
+
+```matlab
+runPeyManPixelApp
+```
+
+The UI uses a Pac-Man inspired fitness loop: Pey-Man moves toward the goal pellets as daily fitness targets are completed, while the ghost moves closer when targets are missed.
 
 ## Judging Summary
 
