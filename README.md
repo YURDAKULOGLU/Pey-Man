@@ -64,6 +64,18 @@ runLocalDataSession
 
 Full real-world recording and privacy rules are in `IRL_TEST_RUNBOOK.md`.
 
+## Public Data Fallback
+
+If team phone recordings are delayed, download and inspect the public WISDM HAR fallback dataset using MATLAB only:
+
+```matlab
+cd source/pey_man
+downloadWisdmDataset
+inspectWisdmDataset
+```
+
+The downloaded files stay under ignored `local_data/wisdm_hf/`.
+
 ## Judging Summary
 
 Model work is worth 70 points:

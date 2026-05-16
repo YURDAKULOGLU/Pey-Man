@@ -26,6 +26,7 @@ Every accepted feature must include:
 - repo-relative MATLAB entrypoint or function,
 - documented input/output shape,
 - bounded failure behavior,
+- no Python or non-MATLAB runtime in the submitted model, UI, or data-processing path,
 - no local absolute paths in source,
 - `VERIFY.md` evidence or a checklist entry,
 - commit pushed to `origin/main`.
@@ -54,9 +55,9 @@ The demo must show:
 ## Hard Rejections
 
 - Broken MATLAB entrypoint.
+- Python-dependent model, UI, or data-processing feature.
 - Hardcoded user path in source.
 - ML model that cannot be trained or bypassed.
 - Safety claim for fall detection.
 - Unlabeled or confusing plot.
 - Demo dependency on live phone sensors only.
-
