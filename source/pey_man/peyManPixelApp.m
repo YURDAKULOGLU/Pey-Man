@@ -46,10 +46,10 @@ left.Padding = [0 0 0 0];
 left.RowSpacing = 12;
 left.BackgroundColor = colors.bg;
 
-header = uigridlayout(left, [1 4]);
+header = uigridlayout(left, [1 5]);
 header.Layout.Row = 1;
 header.Layout.Column = 1;
-header.ColumnWidth = {"1x", 170, 170, 170};
+header.ColumnWidth = {"1x", 145, 145, 145, 145};
 header.Padding = [0 0 0 0];
 header.ColumnSpacing = 10;
 header.BackgroundColor = colors.bg;
@@ -72,6 +72,9 @@ levelLabel.Layout.Column = 3;
 
 trustLabel = makeHeaderLabel(header, "TRUST --%", colors.text);
 trustLabel.Layout.Column = 4;
+
+validationLabel = makeHeaderLabel(header, "VAL --%", colors.text);
+validationLabel.Layout.Column = 5;
 
 gameAxes = uiaxes(left);
 gameAxes.Layout.Row = 2;
@@ -211,11 +214,17 @@ drawAll();
         quality = metricNumber("workoutQualityScore", 0);
         fatigue = metricNumber("fatigueIndex", 0);
         confidence = metricNumber("confidenceIndex", 0);
+        validationAcc = metricNumber("validationAccuracy", metricNumber("modelValidationAccuracy", NaN));
         score = round(quality * 1000 + confidence * 100);
 
         scoreLabel.Text = sprintf("SCORE %06d", score);
         levelLabel.Text = sprintf("LEVEL %02d", max(1, ceil(max(quality, 1) / 20)));
         trustLabel.Text = sprintf("TRUST %.0f%%", confidence);
+        if isnan(validationAcc)
+            validationLabel.Text = "VAL --%";
+        else
+            validationLabel.Text = sprintf("VAL %.0f%%", validationAcc * 100);
+        end
 
         if ~state.bundle.hasMetrics
             statusLabel.Text = "NO DATA";
