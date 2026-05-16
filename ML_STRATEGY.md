@@ -7,8 +7,11 @@ Use machine learning where it is easy to prove and explain:
 - `P0`: supervised `sit / walk / run` activity classification from MATLAB Mobile activity logs.
 - `P0`: deterministic Fatigue Index from baseline deviation, cadence drop, activity consistency, and late-session load.
 - `P1`: step count, distance, calories, cadence, and dashboard polish.
+- `P2`: optional Strava/Fitbit next-run speed regression for personalized treadmill-style workout planning.
 
 Do not make the Fatigue Index a black-box model for the starter. Judges need to see why the fatigue signal rose.
+
+The workout planner is separate from the core demo. It can use a regression model on local Strava/Fitbit data, then convert predicted speed/readiness into warmup, run, break, and cooldown blocks. If that data is unavailable, the planner demos still run from bundled/example summaries.
 
 ## Why This Can Score Higher
 

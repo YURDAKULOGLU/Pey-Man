@@ -173,3 +173,22 @@ Audit status:
 - Canonical Claude/Kimi audit attempted but timed out.
 - Current audit artifact: `docs/audits/2026-05-16-codex-change-audit-attempt.md`.
 - Status remains `CONCERNS` until Claude or Kimi review completes.
+
+## 2026-05-16 Workout Planner Prototype
+
+Integrated the useful parts of the `codex/workout-model-training` branch without merging stale core files.
+
+Command:
+
+```powershell
+matlab -batch "cd('C:/Projeler/Pey-Man/source/pey_man'); simpleWorkoutPlannerDemo; close all; simpleWorkoutPlannerFromExampleData; close all; disp('WORKOUT_PLANNER_DEMOS_OK')"
+```
+
+Result: `WORKOUT_PLANNER_DEMOS_OK`.
+
+Coverage:
+
+- summary-based treadmill-style workout planner runs,
+- bundled `ExampleData.mat` speed summary can generate a plan,
+- Strava/Fitbit training prototype is documented but remains optional,
+- `data/` and `models/` are ignored so Kaggle/raw/trained local files are not committed.

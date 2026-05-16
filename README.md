@@ -25,6 +25,7 @@ Goal: use phone sensor data to produce useful fitness outputs such as steps, cal
 - `timeElapsed.m` - helper function for elapsed time arrays.
 - `runPeyManPixelApp.m` - launches the Pac-Man inspired pixel-art MATLAB UI.
 - `source/pey_man/peyManPixelApp.m` - 100% MATLAB UI implementation with generated pixel characters.
+- `source/pey_man/trainWorkoutModelDemo.m` - optional Strava/Fitbit workout-speed model training prototype.
 - `Instructions.pdf` - setup and workflow guidance.
 - `GradingRubric.pdf` - judging criteria.
 
@@ -52,6 +53,10 @@ https://matlab.mathworks.com/open/github/v1?repo=YURDAKULOGLU/Pey-Man&file=sourc
 ```
 
 The repository is private, so collaborators must have GitHub access. Full test instructions are in `TEST_PLAN.md`.
+
+## Workout Model Training
+
+Optional personalized running-plan training is documented in `WORKOUT_MODEL_TRAINING.md`. Kaggle data stays local under ignored `data/`, and trained models stay under ignored `models/`. The core hackathon demo does not depend on these files.
 
 ## IRL Data Test
 
