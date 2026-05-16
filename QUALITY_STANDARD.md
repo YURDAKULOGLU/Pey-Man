@@ -59,4 +59,5 @@ The demo must show:
 - Safety claim for fall detection.
 - Unlabeled or confusing plot.
 - Demo dependency on live phone sensors only.
-
+- API key committed to git or required for the core demo.
+- Overlapped analysis windows counted as full independent workout time.

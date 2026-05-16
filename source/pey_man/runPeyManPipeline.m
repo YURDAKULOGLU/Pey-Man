@@ -12,6 +12,8 @@ options = withDefault(options, "windowSeconds", 4);
 options = withDefault(options, "windowOverlap", 0.75);
 options = withDefault(options, "bodyMassKg", 70);
 options = withDefault(options, "strideLengthM", 0.72);
+options = withDefault(options, "enableCoachApi", false);
+options = withDefault(options, "coachModel", "gpt-4o-mini");
 
 session = loadSessionData(options);
 processed = preprocessSignal(session);
@@ -42,13 +44,16 @@ summary.DistanceKm = stepsDistance.distanceKm;
 summary.DistanceSource = stepsDistance.distanceSource;
 summary.EstimatedCalories = calories;
 summary.CadenceSpm = cadenceSpm;
-summary.ActiveMinutes = sum(features.durationSec(features.activityLabel ~= "sit")) / 60;
+seconds = analysisDurationSeconds(features);
+summary.ActiveMinutes = sum(seconds(features.activityLabel ~= "sit")) / 60;
 summary.ActivityMix = activityMixTable(features);
 summary.PeakFatigueMinute = fatigueTimeline.peakMinute(1);
 summary.PeakFatigueLabel = fatigueTimeline.peakLabel(1);
+summary.CoachAdvice = generateCoachAdvice(summary, options);
 
 summaryText = generateSessionSummary(summary);
 
+plotSensorOverview(session, processed, features);
 plotFatigueTimeline(fatigueTimeline);
 createDashboard(features, fatigueTimeline, summary);
 
@@ -80,8 +85,9 @@ end
 function mix = activityMixTable(features)
 labels = categories(categorical(features.activityLabel));
 minutes = zeros(numel(labels), 1);
+seconds = analysisDurationSeconds(features);
 for i = 1:numel(labels)
-    minutes(i) = sum(features.durationSec(features.activityLabel == labels{i})) / 60;
+    minutes(i) = sum(seconds(features.activityLabel == labels{i})) / 60;
 end
 mix = table(string(labels), minutes, 'VariableNames', ["activity", "minutes"]);
 end

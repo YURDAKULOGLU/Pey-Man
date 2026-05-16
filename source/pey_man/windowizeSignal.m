@@ -23,8 +23,29 @@ ends = min(starts + windowSamples - 1, n);
 tStartSec = processed.timeSec(starts);
 tEndSec = processed.timeSec(ends);
 durationSec = max(0, tEndSec - tStartSec);
+effectiveDurationSec = representedDuration(tStartSec, durationSec);
 
-windows = table(starts(:), ends(:), tStartSec(:), tEndSec(:), durationSec(:), ...
-    'VariableNames', ["startIndex", "endIndex", "tStartSec", "tEndSec", "durationSec"]);
+windows = table(starts(:), ends(:), tStartSec(:), tEndSec(:), durationSec(:), effectiveDurationSec(:), ...
+    'VariableNames', ["startIndex", "endIndex", "tStartSec", "tEndSec", "durationSec", "effectiveDurationSec"]);
 end
 
+function seconds = representedDuration(tStartSec, durationSec)
+%REPRESENTEDDURATION Duration represented by each overlapped analysis window.
+
+if numel(tStartSec) <= 1
+    seconds = durationSec;
+    return;
+end
+
+hopSeconds = median(diff(tStartSec), "omitnan");
+if ~isfinite(hopSeconds) || hopSeconds <= 0
+    hopSeconds = median(durationSec, "omitnan");
+end
+if ~isfinite(hopSeconds) || hopSeconds <= 0
+    hopSeconds = 1;
+end
+
+seconds = repmat(hopSeconds, size(durationSec));
+seconds = min(seconds, durationSec);
+seconds = max(seconds, 0);
+end

@@ -3,7 +3,8 @@ function out = computeStepsDistance(session, features, cadenceByWindow, options)
 
 strideLengthM = getOption(options, "strideLengthM", 0.72);
 active = features.activityLabel ~= "sit";
-stepsByWindow = cadenceByWindow ./ 60 .* features.durationSec;
+seconds = analysisDurationSeconds(features);
+stepsByWindow = cadenceByWindow ./ 60 .* seconds;
 stepCount = round(sum(stepsByWindow(active), "omitnan"));
 
 gpsDistanceKm = NaN;

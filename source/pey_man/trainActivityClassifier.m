@@ -51,7 +51,10 @@ if exist("fitctree", "file") == 2
     model.type = "fitctree";
     model.predictorNames = predictorNames;
     model.trainedModel = fitctree(X, y, "MinLeafSize", 2);
+    predicted = predict(model.trainedModel, X);
+    model.trainingAccuracy = mean(predicted == y);
     model.trainingRows = height(training);
+    model.trainingLabelCounts = labelCounts(training.Label);
     model.reason = "trained from ActivityLogs.mat";
 else
     model = ruleModel(predictorNames, "fitctree unavailable; using rule fallback");
@@ -64,7 +67,17 @@ model.type = "rule";
 model.predictorNames = predictorNames;
 model.trainedModel = [];
 model.trainingRows = 0;
+model.trainingAccuracy = NaN;
+model.trainingLabelCounts = struct();
 model.reason = reason;
+end
+
+function counts = labelCounts(labels)
+cats = categories(labels);
+counts = struct();
+for i = 1:numel(cats)
+    counts.(cats{i}) = sum(labels == cats{i});
+end
 end
 
 function value = getOption(options, name, defaultValue)

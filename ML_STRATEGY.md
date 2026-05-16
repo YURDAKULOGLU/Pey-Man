@@ -35,6 +35,18 @@ The project still shows real ML through the activity classifier, but the hero sc
 5. Fall back to a deterministic classifier only if `fitctree` is unavailable.
 6. Use classifier confidence as one component of the sensor confidence index.
 
+## Evaluation Discipline
+
+AgentLaboratory was inspected as a reference for research workflow quality. We are not adding it as a dependency. The reusable standard is:
+
+- keep a dataset manifest,
+- record train rows and label counts,
+- separate training evidence from generalization claims,
+- run a leakage audit before claiming model quality,
+- map every metric to the hackathon rubric.
+
+For the starter demo, `modelTrainingAccuracy` is only a sanity signal. It is not a final accuracy claim because the starter labels are used to train the classifier. Team data must be used for a stronger evaluation.
+
 ## What Not To Do Before Baseline Green
 
 - No LSTM-first plan.
@@ -52,4 +64,13 @@ The hero scene is:
 3. labels and motion features become Fatigue Index,
 4. Fatigue Index produces one annotated timeline,
 5. the session summary explains what happened in English.
+
+## Graph Verdict Rule
+
+The project should show more than raw data. A good graph sequence is:
+
+1. raw acceleration overview,
+2. extracted feature windows with ML labels,
+3. fatigue timeline with fixed threshold bands,
+4. dashboard with score, confidence, steps, calories, cadence, and activity mix.
 

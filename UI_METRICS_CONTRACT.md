@@ -29,9 +29,14 @@ outputs/<session-name>/figure_*.png
   "distanceSource": "gps",
   "estimatedCalories": 236.6,
   "cadenceSpm": 104.8,
-  "activeMinutes": 24.1,
+  "activeMinutes": 6.0,
   "peakFatigueMinute": 5.9,
-  "peakFatigueLabel": "Fatigue Signal Elevated at 5:56"
+  "peakFatigueLabel": "Peak Fatigue Signal at 5:56",
+  "coachAdvice": "Strong session...",
+  "coachAdviceSource": "template_fallback",
+  "modelType": "fitctree",
+  "modelTrainingRows": 147,
+  "modelTrainingAccuracy": 0.99
 }
 ```
 
@@ -45,8 +50,12 @@ The UI should show, in this order:
 4. Activity breakdown.
 5. Steps, distance, cadence, calories.
 6. Pac-Man goal pellets and streak polish.
+7. Optional coach advice.
+
+## Pac-Man UI Standard
+
+The MATLAB UI must use the full pixel arcade concept from `source/pey_man/PEY_MAN_UI.md`. It should render the model outputs as maze progress, pellets, ghost pressure, score, and streak. Pac-Man styling is the product surface, not a decorative chart wrapper.
 
 ## Guardrail
 
 The UI must not invent metrics that the model does not export. If a new visual needs a new value, add it to this contract and the exporter first.
-

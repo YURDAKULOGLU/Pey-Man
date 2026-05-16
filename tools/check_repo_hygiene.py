@@ -34,7 +34,7 @@ def main() -> None:
     if missing:
         fail("missing required files: " + ", ".join(missing))
 
-    absolute_path_pattern = re.compile(r"[A-Za-z]:[\\/]")
+    absolute_path_pattern = re.compile(r"(?<![A-Za-z])[A-Za-z]:[\\/]")
     for directory in SOURCE_DIRS:
         for path in directory.rglob("*"):
             if path.suffix.lower() not in {".m", ".mlx", ".py"}:

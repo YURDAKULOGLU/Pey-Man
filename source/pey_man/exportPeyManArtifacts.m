@@ -22,6 +22,13 @@ metrics.cadenceSpm = result.summary.CadenceSpm;
 metrics.activeMinutes = result.summary.ActiveMinutes;
 metrics.peakFatigueMinute = result.summary.PeakFatigueMinute;
 metrics.peakFatigueLabel = result.summary.PeakFatigueLabel;
+metrics.coachAdvice = result.summary.CoachAdvice.text;
+metrics.coachAdviceSource = result.summary.CoachAdvice.source;
+metrics.modelType = result.model.type;
+metrics.modelReason = result.model.reason;
+metrics.modelTrainingRows = result.model.trainingRows;
+metrics.modelTrainingAccuracy = result.model.trainingAccuracy;
+metrics.modelTrainingLabelCounts = result.model.trainingLabelCounts;
 
 jsonPath = fullfile(outputDir, "latest_metrics.json");
 fid = fopen(jsonPath, "w");
@@ -47,4 +54,3 @@ for i = 1:numel(figures)
     end
 end
 end
-

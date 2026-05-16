@@ -3,8 +3,9 @@ function plotActivityPie(features)
 
 labels = categories(categorical(features.activityLabel));
 minutes = zeros(numel(labels), 1);
+seconds = analysisDurationSeconds(features);
 for i = 1:numel(labels)
-    minutes(i) = sum(features.durationSec(features.activityLabel == labels{i})) / 60;
+    minutes(i) = sum(seconds(features.activityLabel == labels{i})) / 60;
 end
 
 valid = minutes > 0;

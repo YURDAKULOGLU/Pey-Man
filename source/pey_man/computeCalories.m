@@ -8,7 +8,7 @@ met(features.activityLabel == "walk") = 3.5;
 met(features.activityLabel == "run") = 8.0;
 met(features.activityLabel == "unknown") = 2.0;
 
-minutes = features.durationSec / 60;
+minutes = analysisDurationSeconds(features) / 60;
 caloriesByWindow = met * 3.5 * bodyMassKg / 200 .* minutes;
 calories = round(sum(caloriesByWindow, "omitnan"), 1);
 end

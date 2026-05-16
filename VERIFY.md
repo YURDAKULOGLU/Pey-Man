@@ -13,15 +13,16 @@ Result: passed.
 Observed output:
 
 ```text
-WorkoutQualityScore: 76.2 / 100
+WorkoutQualityScore: 58.8 / 100
 FatigueIndex: 17.2 / 100
 ConfidenceIndex: 91.2%
-StepCount: 2478
+StepCount: 624
 DistanceKm: 0.658
 DistanceSource: gps
 CadenceSpm: 104.8
-EstimatedCalories: 236.6
-PeakFatigueLabel: Fatigue Signal Elevated at 5:56
+EstimatedCalories: 59.4
+ActiveMinutes: 6.1
+PeakFatigueLabel: Peak Fatigue Signal at 5:56
 ```
 
 Coverage:
@@ -32,7 +33,7 @@ Coverage:
 - session summary generated in English,
 - confidence index computed,
 - step count, distance, cadence, and calories computed,
-- hero plot and dashboard code executed without MATLAB error.
+- raw sensor overview, hero plot, and dashboard code executed without MATLAB error.
 
 Remaining checks:
 
@@ -97,15 +98,16 @@ Result: `SYNTHETIC_EXPORT_OK`.
 Observed synthetic output:
 
 ```text
-WorkoutQualityScore: 69.3 / 100
+WorkoutQualityScore: 58.1 / 100
 FatigueIndex: 49.3 / 100
-ConfidenceIndex: 94.0%
-StepCount: 3364
+ConfidenceIndex: 94.2%
+StepCount: 821
 DistanceKm: 0.679
 DistanceSource: gps
 CadenceSpm: 75.0
-EstimatedCalories: 444.8
-PeakFatigueLabel: Fatigue Signal Elevated at 7:07
+EstimatedCalories: 104.4
+ActiveMinutes: 11.0
+PeakFatigueLabel: Moderate Fatigue Signal at 7:07
 ```
 
 Local data fallback when `local_data/*.mat` is absent:
@@ -125,3 +127,42 @@ matlab -batch "cd('C:/Projeler/Pey-Man/source/pey_man'); r=runPeyManFile('../mat
 Result: `RUN_FILE_OK`.
 
 Artifacts are written under ignored `outputs/`.
+
+## 2026-05-16 Overlap Metrics + Graph Semantics Fix
+
+Problem found during visual review: 4-second analysis windows with 75% overlap were being summed as full independent duration. This inflated active minutes, steps, calories, and activity mix by roughly the overlap factor.
+
+Fix:
+
+- added `effectiveDurationSec`,
+- changed steps, calories, active minutes, quality score, and activity mix to use represented non-overlap duration,
+- added raw acceleration + ML feature overview figure,
+- changed fatigue plot to fixed low/moderate/elevated threshold bands,
+- changed low-fatigue annotation from "elevated" to "peak",
+- added model diagnostics to exported JSON,
+- added optional MATLAB `webwrite` coaching path with deterministic fallback.
+
+Commands:
+
+```powershell
+matlab -batch "cd('C:/Projeler/Pey-Man/source/pey_man'); main"
+matlab -batch "cd('C:/Projeler/Pey-Man/source/pey_man'); runSyntheticFatigueDemo; assert(isfile(fullfile('C:/Projeler/Pey-Man','outputs','synthetic','latest_metrics.json'))); disp('SYNTHETIC_EXPORT_OK')"
+matlab -batch "cd('C:/Projeler/Pey-Man/source/pey_man'); r=runPeyManFile('../matlab-mobile-fitness-tracker-master/ExampleData.mat', fullfile('C:/Projeler/Pey-Man','outputs','example_file')); assert(isfile(fullfile('C:/Projeler/Pey-Man','outputs','example_file','latest_metrics.json'))); assert(r.summary.WorkoutQualityScore>=0 && r.summary.WorkoutQualityScore<=100); disp('RUN_FILE_OK')"
+matlab -batch "cd('C:/Projeler/Pey-Man/source/pey_man'); runLocalDataSession; assert(isfile(fullfile('C:/Projeler/Pey-Man','outputs','synthetic','latest_metrics.json'))); disp('LOCAL_DATA_FALLBACK_OK')"
+python tools/check_repo_hygiene.py
+```
+
+Results:
+
+- `main`: passed.
+- `SYNTHETIC_EXPORT_OK`: passed.
+- `RUN_FILE_OK`: passed.
+- `LOCAL_DATA_FALLBACK_OK`: passed.
+- `HYGIENE_OK`: passed.
+
+Visual review:
+
+- `outputs/example_file/figure_2.png`: threshold bands now fixed; low fatigue is labelled as peak, not elevated.
+- `outputs/example_file/figure_3.png`: raw acceleration and ML feature labels are visible.
+- `outputs/synthetic/figure_2.png`: fatigue rises during sustained effort and drops during rest.
+- `outputs/synthetic/figure_3.png`: rest segment is visible and low-motion guard prevents the rest segment from being fully over-called as run.

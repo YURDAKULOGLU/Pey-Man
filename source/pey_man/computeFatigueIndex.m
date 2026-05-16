@@ -30,7 +30,7 @@ timeline = table(features.tStartSec / 60, fatigueByWindow, features.activityLabe
     'VariableNames', ["minute", "FatigueIndex", "activityLabel"]);
 timeline.peakMinute = repmat(peakMinute, height(timeline), 1);
 timeline.peakValue = repmat(peakValue, height(timeline), 1);
-timeline.peakLabel = repmat("Fatigue Signal Elevated at " + minuteLabel(peakMinute), height(timeline), 1);
+timeline.peakLabel = repmat(fatiguePeakLabel(peakValue, peakMinute), height(timeline), 1);
 end
 
 function y = normalize01(x)
@@ -48,3 +48,13 @@ totalSeconds = max(0, round(minuteValue * 60));
 label = sprintf("%d:%02d", floor(totalSeconds / 60), mod(totalSeconds, 60));
 end
 
+function label = fatiguePeakLabel(peakValue, peakMinute)
+if peakValue >= 70
+    prefix = "Elevated Fatigue Signal at ";
+elseif peakValue >= 35
+    prefix = "Moderate Fatigue Signal at ";
+else
+    prefix = "Peak Fatigue Signal at ";
+end
+label = prefix + minuteLabel(peakMinute);
+end

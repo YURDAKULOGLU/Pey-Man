@@ -28,6 +28,7 @@ Required:
 - export UI/demo metrics to ignored `outputs/`,
 - calibrate confidence index against sample quality,
 - document final formulas and weights,
+- record ML training rows, label counts, and leakage limitations,
 - run repeatability and fallback checks.
 
 DoD:
@@ -47,7 +48,9 @@ Goal: make the project memorable for judges.
 Required:
 
 - connect pipeline metrics to the pixel UI,
+- implement the full MATLAB Pac-Man visual concept from `source/pey_man/PEY_MAN_UI.md`,
 - keep Pac-Man pellets as polish, not a replacement for model output,
+- optionally show coach advice from `generateCoachAdvice.m` with deterministic fallback,
 - add personalized daily goal constants,
 - prepare English demo script and report outline,
 - rehearse under 5 minutes.
