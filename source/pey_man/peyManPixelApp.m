@@ -14,6 +14,8 @@ end
 state.bundle = loadPeyManUiMetrics(metricsSource);
 state.autoRefreshSeconds = getUiOption(uiOptions, "autoRefreshSeconds", 0);
 state.refreshTimer = [];
+state.task = defaultTaskState();
+state.taskView = defaultTaskView();
 
 colors.bg = [0.02 0.02 0.08];
 colors.panel = [0.03 0.04 0.13];
@@ -91,12 +93,12 @@ timelineAxes.Layout.Row = 3;
 timelineAxes.Layout.Column = 1;
 styleAxes(timelineAxes, colors.bg);
 
-side = uigridlayout(root, [5 1]);
+side = uigridlayout(root, [6 1]);
 side.Layout.Row = 1;
 side.Layout.Column = 2;
-side.RowHeight = {56, 278, 155, "1x", 58};
+side.RowHeight = {50, 238, 120, 178, "1x", 54};
 side.Padding = [0 0 0 0];
-side.RowSpacing = 12;
+side.RowSpacing = 8;
 side.BackgroundColor = colors.bg;
 
 statusLabel = uilabel(side, ...
@@ -114,9 +116,9 @@ metricsPanel = makePanel(side, "SESSION METRICS");
 metricsPanel.Layout.Row = 2;
 metricGrid = uigridlayout(metricsPanel, [9 2]);
 metricGrid.ColumnWidth = {150, "1x"};
-metricGrid.RowHeight = repmat({22}, 1, 9);
-metricGrid.Padding = [12 18 12 12];
-metricGrid.RowSpacing = 3;
+metricGrid.RowHeight = repmat({19}, 1, 9);
+metricGrid.Padding = [12 16 12 10];
+metricGrid.RowSpacing = 2;
 metricGrid.ColumnSpacing = 8;
 metricGrid.BackgroundColor = colors.panel;
 
@@ -140,15 +142,72 @@ activityAxes.Layout.Row = 1;
 activityAxes.Layout.Column = 1;
 styleAxes(activityAxes, colors.panel);
 
+taskPanel = makePanel(side, "LIVE TASKS");
+taskPanel.Layout.Row = 4;
+taskGrid = uigridlayout(taskPanel, [6 2]);
+taskGrid.ColumnWidth = {112, "1x"};
+taskGrid.RowHeight = {22, 22, 22, 22, 30, "1x"};
+taskGrid.Padding = [10 16 10 8];
+taskGrid.RowSpacing = 3;
+taskGrid.ColumnSpacing = 8;
+taskGrid.BackgroundColor = colors.panel;
+
+addTaskText(taskGrid, "ACTIVITY", 1);
+taskActivityDrop = uidropdown(taskGrid, ...
+    "Items", ["any", "walk", "run"], ...
+    "Value", "walk", ...
+    "FontName", "Courier New", ...
+    "FontSize", 12, ...
+    "FontColor", colors.white, ...
+    "BackgroundColor", [0 0 0]);
+taskActivityDrop.Layout.Row = 1;
+taskActivityDrop.Layout.Column = 2;
+
+taskMinutesField = addTaskNumber(taskGrid, "MIN TARGET", 2, 2);
+taskCaloriesField = addTaskNumber(taskGrid, "KCAL TARGET", 20, 3);
+taskStepsField = addTaskNumber(taskGrid, "STEP TARGET", 300, 4);
+
+taskButtonGrid = uigridlayout(taskGrid, [1 3]);
+taskButtonGrid.Layout.Row = 5;
+taskButtonGrid.Layout.Column = [1 2];
+taskButtonGrid.ColumnWidth = {"1x", "1x", "1x"};
+taskButtonGrid.Padding = [0 0 0 0];
+taskButtonGrid.ColumnSpacing = 6;
+taskButtonGrid.BackgroundColor = colors.panel;
+
+startTaskButton = makePixelButton(taskButtonGrid, "START", colors.green, [0 0 0]);
+startTaskButton.Layout.Column = 1;
+startTaskButton.ButtonPushedFcn = @startTask;
+
+endTaskButton = makePixelButton(taskButtonGrid, "END", colors.orange, [0 0 0]);
+endTaskButton.Layout.Column = 2;
+endTaskButton.ButtonPushedFcn = @endTask;
+
+resetTaskButton = makePixelButton(taskButtonGrid, "RESET", colors.red, colors.white);
+resetTaskButton.Layout.Column = 3;
+resetTaskButton.ButtonPushedFcn = @resetTask;
+
+taskStatusLabel = uilabel(taskGrid, ...
+    "Text", "Set a live task and press START.", ...
+    "FontName", "Courier New", ...
+    "FontWeight", "bold", ...
+    "FontSize", 11, ...
+    "FontColor", colors.white, ...
+    "BackgroundColor", colors.panel, ...
+    "VerticalAlignment", "top", ...
+    "WordWrap", "on");
+taskStatusLabel.Layout.Row = 6;
+taskStatusLabel.Layout.Column = [1 2];
+
 logPanel = makePanel(side, "DEMO NARRATIVE");
-logPanel.Layout.Row = 4;
+logPanel.Layout.Row = 5;
 logGrid = uigridlayout(logPanel, [1 1]);
 logGrid.Padding = [12 18 12 12];
 logGrid.BackgroundColor = colors.panel;
 logLabel = uilabel(logGrid, ...
     "Text", "", ...
     "FontName", "Courier New", ...
-    "FontSize", 13, ...
+    "FontSize", 11, ...
     "FontColor", colors.white, ...
     "BackgroundColor", colors.panel, ...
     "VerticalAlignment", "top", ...
@@ -157,7 +216,7 @@ logLabel.Layout.Row = 1;
 logLabel.Layout.Column = 1;
 
 buttonGrid = uigridlayout(side, [1 4]);
-buttonGrid.Layout.Row = 5;
+buttonGrid.Layout.Row = 6;
 buttonGrid.Layout.Column = 1;
 buttonGrid.ColumnWidth = {"1x", "1x", "1x", "1x"};
 buttonGrid.Padding = [0 0 0 0];
@@ -206,6 +265,33 @@ configureRefreshTimer();
         label.Layout.Column = 2;
     end
 
+    function addTaskText(parent, textValue, row)
+        label = uilabel(parent, ...
+            "Text", textValue, ...
+            "FontName", "Courier New", ...
+            "FontWeight", "bold", ...
+            "FontSize", 11, ...
+            "FontColor", colors.text, ...
+            "BackgroundColor", colors.panel);
+        label.Layout.Row = row;
+        label.Layout.Column = 1;
+    end
+
+    function field = addTaskNumber(parent, labelText, value, row)
+        addTaskText(parent, labelText, row);
+        field = uieditfield(parent, "numeric", ...
+            "Value", value, ...
+            "Limits", [0 Inf], ...
+            "RoundFractionalValues", "off", ...
+            "FontName", "Courier New", ...
+            "FontWeight", "bold", ...
+            "FontSize", 11, ...
+            "FontColor", colors.white, ...
+            "BackgroundColor", [0 0 0]);
+        field.Layout.Row = row;
+        field.Layout.Column = 2;
+    end
+
     function refreshCurrent(varargin)
         state.bundle = loadPeyManUiMetrics(state.bundle.outputDir);
         drawAll();
@@ -226,6 +312,40 @@ configureRefreshTimer();
         drawAll();
     end
 
+    function startTask(varargin)
+        state.task = defaultTaskState();
+        state.task.activity = string(taskActivityDrop.Value);
+        state.task.targetMinutes = max(0, taskMinutesField.Value);
+        state.task.targetCalories = max(0, taskCaloriesField.Value);
+        state.task.targetSteps = max(0, taskStepsField.Value);
+        state.task.baseline = currentTaskSnapshot(state.task.activity);
+        state.task.active = true;
+        state.task.startedAt = datetime("now", "Format", "HH:mm:ss");
+        drawAll();
+    end
+
+    function endTask(varargin)
+        if ~state.task.active && ~state.task.completed && ~state.task.failed
+            drawAll();
+            return;
+        elseif ~state.task.active && ~state.task.completed
+            state.task.ended = true;
+            state.task.failed = true;
+        else
+            view = evaluateTaskView();
+            state.task.ended = true;
+            state.task.active = false;
+            state.task.completed = view.complete;
+            state.task.failed = ~view.complete;
+        end
+        drawAll();
+    end
+
+    function resetTask(varargin)
+        state.task = defaultTaskState();
+        drawAll();
+    end
+
     function drawAll()
         quality = metricNumber("workoutQualityScore", 0);
         fatigue = metricNumber("fatigueIndex", 0);
@@ -234,6 +354,14 @@ configureRefreshTimer();
         score = round(quality * 1000 + confidence * 100);
         isLiveSource = metricText("sourceKind", "") == "live_mobile_stream";
         currentActivity = upper(char(metricText("currentActivity", "N/A")));
+        state.taskView = evaluateTaskView();
+        if state.task.active && state.taskView.complete
+            state.task.active = false;
+            state.task.ended = true;
+            state.task.completed = true;
+            state.task.failed = false;
+            state.taskView = evaluateTaskView();
+        end
 
         scoreLabel.Text = sprintf("SCORE %06d", score);
         levelLabel.Text = sprintf("LEVEL %02d", max(1, ceil(max(quality, 1) / 20)));
@@ -247,6 +375,15 @@ configureRefreshTimer();
         if ~state.bundle.hasMetrics || ~metricAvailable("workoutQualityScore")
             statusLabel.Text = "NO DATA";
             statusLabel.FontColor = colors.red;
+        elseif state.taskView.completed
+            statusLabel.Text = "TASK CLEAR";
+            statusLabel.FontColor = colors.green;
+        elseif state.taskView.failed
+            statusLabel.Text = "TASK MISS";
+            statusLabel.FontColor = colors.red;
+        elseif state.taskView.active
+            statusLabel.Text = sprintf("TASK %.0f%%", state.taskView.progress);
+            statusLabel.FontColor = colors.ghost2;
         elseif fatigue >= 70
             statusLabel.Text = "FATIGUE!";
             statusLabel.FontColor = colors.red;
@@ -270,11 +407,148 @@ configureRefreshTimer();
         metricLabels.distance.Text = char(metricDisplayNumber("distanceKm", "%.2f km"));
         metricLabels.cadence.Text = char(metricDisplayNumber("cadenceSpm", "%.1f spm"));
         metricLabels.calories.Text = char(metricDisplayNumber("estimatedCalories", "%.1f kcal"));
+        taskStatusLabel.Text = composeTaskStatus(state.taskView);
 
         logLabel.Text = composeNarrative();
         drawGame();
         drawTimeline();
         drawActivity();
+    end
+
+    function snapshot = currentTaskSnapshot(activity)
+        if nargin < 1
+            activity = string(taskActivityDrop.Value);
+        end
+        snapshot = struct();
+        snapshot.steps = metricNumber("stepCount", 0);
+        snapshot.calories = metricNumber("estimatedCalories", 0);
+        snapshot.activeMinutes = metricNumber("activeMinutes", 0);
+        snapshot.activityMinutes = activityMinutesFor(activity);
+        snapshot.currentActivity = metricText("currentActivity", "unknown");
+    end
+
+    function minutes = activityMinutesFor(activity)
+        activity = string(activity);
+        if activity == "any"
+            minutes = metricNumber("activeMinutes", 0);
+            return;
+        end
+
+        minutes = 0;
+        tbl = state.bundle.caloriesByActivity;
+        if ~state.bundle.hasMetrics || height(tbl) == 0 || ...
+                ~all(ismember(["activity", "minutes"], string(tbl.Properties.VariableNames)))
+            return;
+        end
+
+        mask = string(tbl.activity) == activity;
+        if any(mask)
+            minutes = sum(tbl.minutes(mask), "omitnan");
+        end
+    end
+
+    function view = evaluateTaskView()
+        view = defaultTaskView();
+        view.activity = state.task.activity;
+        if ~state.task.active && ~state.task.ended && ~state.task.completed && ~state.task.failed
+            return;
+        end
+
+        view.active = state.task.active;
+        view.completed = state.task.completed;
+        view.failed = state.task.failed;
+        view.ended = state.task.ended;
+
+        nowSnapshot = currentTaskSnapshot(state.task.activity);
+        requiredActivity = state.task.activity;
+        if requiredActivity == "any"
+            minutesDone = max(0, nowSnapshot.activeMinutes - state.task.baseline.activeMinutes);
+        else
+            minutesDone = max(0, nowSnapshot.activityMinutes - state.task.baseline.activityMinutes);
+        end
+        caloriesDone = max(0, nowSnapshot.calories - state.task.baseline.calories);
+        stepsDone = max(0, nowSnapshot.steps - state.task.baseline.steps);
+
+        minuteRatio = ratioOrComplete(minutesDone, state.task.targetMinutes);
+        calorieRatio = ratioOrComplete(caloriesDone, state.task.targetCalories);
+        stepRatio = ratioOrComplete(stepsDone, state.task.targetSteps);
+        targetCount = enabledTaskTargetCount();
+
+        if targetCount == 0
+            progress = double(requiredActivity == "any" || nowSnapshot.currentActivity == requiredActivity) * 100;
+        else
+            progress = 100 * mean([minuteRatio calorieRatio stepRatio]);
+        end
+        progress = clampValue(progress, 0, 100);
+
+        minuteOk = state.task.targetMinutes <= 0 || minutesDone >= state.task.targetMinutes;
+        calorieOk = state.task.targetCalories <= 0 || caloriesDone >= state.task.targetCalories;
+        stepOk = state.task.targetSteps <= 0 || stepsDone >= state.task.targetSteps;
+        activityOk = requiredActivity == "any" || nowSnapshot.currentActivity == requiredActivity || minutesDone > 0;
+        complete = minuteOk && calorieOk && stepOk && activityOk && targetCount > 0;
+
+        if state.task.completed
+            complete = true;
+            progress = 100;
+        elseif state.task.failed
+            complete = false;
+            progress = max(0, progress - 35);
+        end
+
+        view.progress = round(progress, 1);
+        view.complete = complete;
+        view.completed = state.task.completed || complete;
+        view.failed = state.task.failed;
+        view.minutesDone = round(minutesDone, 2);
+        view.caloriesDone = round(caloriesDone, 1);
+        view.stepsDone = round(stepsDone);
+        view.currentActivity = nowSnapshot.currentActivity;
+        view.activityMatch = activityOk;
+    end
+
+    function ratio = ratioOrComplete(value, target)
+        if target <= 0
+            ratio = 1;
+        else
+            ratio = min(max(value / target, 0), 1);
+        end
+    end
+
+    function count = enabledTaskTargetCount()
+        count = double(state.task.targetMinutes > 0) + ...
+            double(state.task.targetCalories > 0) + ...
+            double(state.task.targetSteps > 0);
+    end
+
+    function textValue = composeTaskStatus(view)
+        if ~view.active && ~view.ended && ~view.completed && ~view.failed
+            textValue = "Set activity, minutes, calories, or steps. START locks current live metrics as baseline.";
+            return;
+        end
+
+        if view.completed
+            stateText = "CLEAR";
+        elseif view.failed
+            stateText = "MISSED";
+        elseif view.active
+            stateText = "ACTIVE";
+        else
+            stateText = "ENDED";
+        end
+
+        matchText = "MATCH";
+        if ~view.activityMatch
+            matchText = "NO MATCH";
+        end
+
+        textValue = sprintf([ ...
+            '%s %s | %.0f%% | NOW %s (%s)\n' ...
+            'MIN %.1f/%.1f | KCAL %.1f/%.1f | STEP %.0f/%.0f'], ...
+            upper(char(state.task.activity)), stateText, view.progress, ...
+            upper(char(view.currentActivity)), matchText, ...
+            view.minutesDone, state.task.targetMinutes, ...
+            view.caloriesDone, state.task.targetCalories, ...
+            view.stepsDone, state.task.targetSteps);
     end
 
     function textValue = composeNarrative()
@@ -336,6 +610,25 @@ configureRefreshTimer();
         sport = metricText("detectedSport", "SESSION");
         progress = min(max(quality, 0), 100);
         danger = min(max(fatigue, 0), 100);
+        titleText = "DAILY MAZE MODE";
+        titleColor = colors.pellet;
+
+        if state.taskView.active || state.taskView.ended || state.taskView.completed || state.taskView.failed
+            progress = state.taskView.progress;
+            titleText = "LIVE TASK MAZE";
+            titleColor = colors.ghost2;
+            if state.taskView.completed
+                progress = 100;
+                danger = min(danger, 20);
+                titleText = "TASK CLEAR";
+                titleColor = colors.green;
+            elseif state.taskView.failed
+                progress = max(0, min(progress, 18));
+                danger = 92;
+                titleText = "TASK MISSED";
+                titleColor = colors.red;
+            end
+        end
 
         cla(gameAxes);
         hold(gameAxes, "on");
@@ -356,14 +649,19 @@ configureRefreshTimer();
 
         if danger >= 70
             drawPixelGhost(gameAxes, ghostX, pacY, colors.red, 0.36);
-            text(gameAxes, 13.2, 18.6, "FATIGUE CHASE", ...
+            if state.taskView.failed
+                dangerText = titleText;
+            else
+                dangerText = "FATIGUE CHASE";
+            end
+            text(gameAxes, 13.2, 18.6, dangerText, ...
                 "FontName", "Courier New", "FontWeight", "bold", ...
                 "FontSize", 18, "Color", colors.red);
         else
             drawPixelGhost(gameAxes, ghostX, pacY, colors.ghost, 0.36);
-            text(gameAxes, 11.6, 18.6, "DAILY MAZE MODE", ...
+            text(gameAxes, 11.6, 18.6, titleText, ...
                 "FontName", "Courier New", "FontWeight", "bold", ...
-                "FontSize", 18, "Color", colors.pellet);
+                "FontSize", 18, "Color", titleColor);
         end
 
         drawPixelPacman(gameAxes, pacX, pacY, colors.yellow, 0.38);
@@ -378,6 +676,11 @@ configureRefreshTimer();
         text(gameAxes, 3.1, 20.9, upper(char(sport)), ...
             "FontName", "Courier New", "FontWeight", "bold", ...
             "FontSize", 13, "Color", colors.muted);
+        if state.taskView.active || state.taskView.ended || state.taskView.completed || state.taskView.failed
+            text(gameAxes, 22.0, 20.9, sprintf("TASK %.0f%%", state.taskView.progress), ...
+                "FontName", "Courier New", "FontWeight", "bold", ...
+                "FontSize", 13, "Color", titleColor);
+        end
 
         hold(gameAxes, "off");
     end
@@ -697,6 +1000,37 @@ textValue = string(textValue);
 if strlength(textValue) > maxChars
     textValue = extractBefore(textValue, maxChars - 2) + "...";
 end
+end
+
+function task = defaultTaskState()
+task = struct();
+task.activity = "walk";
+task.targetMinutes = 0;
+task.targetCalories = 0;
+task.targetSteps = 0;
+task.baseline = struct("steps", 0, "calories", 0, "activeMinutes", 0, ...
+    "activityMinutes", 0, "currentActivity", "unknown");
+task.active = false;
+task.ended = false;
+task.completed = false;
+task.failed = false;
+task.startedAt = "";
+end
+
+function view = defaultTaskView()
+view = struct();
+view.activity = "walk";
+view.active = false;
+view.ended = false;
+view.completed = false;
+view.failed = false;
+view.complete = false;
+view.progress = 0;
+view.minutesDone = 0;
+view.caloriesDone = 0;
+view.stepsDone = 0;
+view.currentActivity = "unknown";
+view.activityMatch = false;
 end
 
 function value = getUiOption(options, name, defaultValue)

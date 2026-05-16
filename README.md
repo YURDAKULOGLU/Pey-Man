@@ -40,6 +40,9 @@ runPeyManLiveStream
 
 Live streaming is opt-in. The judged demo path remains `main`,
 `runSyntheticFatigueDemo`, and file-based `.mat` replay.
+The live UI includes a task dashboard where an operator can enter a target
+activity, minutes, calories, and steps; Pac-Man advances when the live stream
+meets the task and falls back if the task is ended incomplete.
 
 ## MATLAB Online (one-click)
 

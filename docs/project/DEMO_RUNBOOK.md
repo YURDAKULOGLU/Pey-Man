@@ -45,6 +45,9 @@ runPeyManLiveStream
 ```
 
 Use live streaming only if the operator has already tested it. It is not the primary judged path.
+For the live task dashboard, enter a sport target in `LIVE TASKS`, press `START`,
+then use `END` only when the activity is over. Completed tasks push Pac-Man
+forward; incomplete ended tasks pull Pac-Man back.
 
 ## Demo Narrative
 
